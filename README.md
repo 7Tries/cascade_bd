@@ -90,9 +90,35 @@ python cli.py restore 1
 python cli.py seed
 ```
 
+---
+
+## 🐘 Подключение через DBeaver (PostgreSQL 16)
+
+CascadeGuard по умолчанию работает с локальным сервером **PostgreSQL 16** (с автоматическим фоллбэком на SQLite WAL, если PostgreSQL выключен):
+
+| Параметр | Значение |
+| :--- | :--- |
+| **СУБД / Драйвер** | `PostgreSQL` |
+| **Хост (Host)** | `127.0.0.1` (или `localhost`) |
+| **Порт (Port)** | `5432` |
+| **База данных (Database)** | `cascadeguard` |
+| **Пользователь (Username)** | `postgres` |
+| **Пароль (Password)** | `postgres` |
+| **JDBC URL** | `jdbc:postgresql://127.0.0.1:5432/cascadeguard` |
+
+### Как наблюдать изменения в DBeaver:
+1. В DBeaver создайте подключение к PostgreSQL с указанными выше параметрами.
+2. Откройте схемы: `cascadeguard` → `public` → `Таблицы` → откройте любую таблицу (например, `departments`, `tasks` или `work_logs`).
+3. В веб-интерфейсе CascadeGuard выполните удаление департамента.
+4. Нажмите `F5` (Обновить) в DBeaver — вы мгновенно увидите, как каскадно удалились связанные записи во всех дочерних таблицах!
+5. Нажмите «Восстановить» в веб-интерфейсе и снова `F5` в DBeaver — данные вернутся в исходное состояние.
+
+---
+
 ### 3. Запуск автоматических тестов
 ```powershell
 cd C:\Users\Anxiety\.gemini\antigravity\scratch\cascade-guard\backend
 python -m unittest tests/test_cascade_integrity.py
 ```
-*Все 7 тестов физической и логической целостности выполняются за ~0.03 секунды!*
+*Набор из 11 тестов верифицирует физическую и логическую целостность сразу на двух движках — SQLite 3 WAL и PostgreSQL 16!*
+
