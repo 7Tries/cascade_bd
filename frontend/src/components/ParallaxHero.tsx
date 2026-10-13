@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Database, ShieldCheck, Sparkles, Layers, History, CheckCircle2 } from 'lucide-react';
+import { Zap, GitGraph, RotateCcw, CheckCircle2, ShieldCheck, Database, Layers } from 'lucide-react';
 
 interface ParallaxHeroProps {
   onOpenSimulator: () => void;
@@ -17,144 +17,92 @@ export const ParallaxHero: React.FC<ParallaxHeroProps> = ({
   return (
     <section
       style={{
-        padding: '36px 24px 28px',
         maxWidth: 1400,
         margin: '0 auto',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 28
+        padding: '24px 24px 16px',
+        width: '100%'
       }}
     >
-      {/* Gentle Welcome Banner */}
       <div
-        className="soft-card"
+        className="studio-card"
         style={{
-          padding: '32px 36px',
-          background: 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 50%, #eff6ff 100%)',
-          border: '1px solid #e0e7ff',
+          padding: '24px 28px',
+          background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)',
           display: 'flex',
           flexDirection: 'column',
-          gap: 24,
-          position: 'relative',
-          overflow: 'hidden'
+          gap: 20
         }}
       >
-        <div style={{ maxWidth: 820, zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-            <span className="badge-soft badge-soft-indigo">
-              <Sparkles size={13} /> Интеллектуальный каскадный движок
-            </span>
-            <span className="badge-soft badge-soft-emerald">
-              <ShieldCheck size={13} /> ACID Гарантия целостности
-            </span>
+        {/* Top Header Row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div style={{ maxWidth: 760 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span className="status-pill status-pill-neutral mono-text" style={{ fontSize: 11 }}>
+                v1.0.4-prod
+              </span>
+              <span className="status-pill status-pill-emerald">
+                <CheckCircle2 size={12} /> Физическая целостность подтверждена
+              </span>
+            </div>
+
+            <h1 style={{ fontSize: 22, fontWeight: 600, color: '#0f172a', marginBottom: 6 }}>
+              Инженерная консоль каскадного удаления
+            </h1>
+            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5 }}>
+              Инструмент для безопасного иерархического удаления данных в реляционных базах. Автоматически строит граф зависимостей, расцепляет циклические связи и предотвращает появление записей-сирот.
+            </p>
           </div>
 
-          <h1
-            style={{
-              fontSize: 'clamp(28px, 4vw, 42px)',
-              fontWeight: 800,
-              color: '#1e293b',
-              lineHeight: 1.2,
-              marginBottom: 12
-            }}
-          >
-            Безопасное каскадное удаление данных
-          </h1>
-
-          <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.6, maxWidth: 700 }}>
-            Удаляйте сложные цепочки связанных сущностей (отделы, проекты, задачи и документы) без риска сломать базу данных. 
-            Система заранее проверит зависимости, защитит оплаченные счета и позволит отменить удаление в один клик.
-          </p>
-
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 22, flexWrap: 'wrap' }}>
-            <button className="btn-soft btn-soft-primary" onClick={onOpenSimulator}>
-              <Zap size={16} /> Проверить в симуляторе
+          {/* Quick Utility Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button className="btn-ui btn-ui-secondary" onClick={onExploreGraph}>
+              <GitGraph size={14} color="#475569" /> Карта связей
             </button>
-
-            <button className="btn-soft btn-soft-secondary" onClick={onExploreGraph}>
-              <Database size={16} color="#6366f1" /> Посмотреть граф связей
+            <button className="btn-ui btn-ui-primary" onClick={onOpenSimulator}>
+              <Zap size={14} color="#f59e0b" /> Запустить симулятор
             </button>
           </div>
         </div>
 
-        {/* Floating Metrics Cards */}
+        {/* Live System Metrics Bar */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: 14,
-            paddingTop: 20,
-            borderTop: '1px solid rgba(226, 232, 240, 0.8)',
-            zIndex: 1
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 12,
+            paddingTop: 16,
+            borderTop: '1px solid #f1f5f9'
           }}
         >
-          <div
-            style={{
-              padding: '12px 16px',
-              borderRadius: 12,
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              boxShadow: 'var(--shadow-sm)'
-            }}
-          >
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>
-              Состояние базы
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <CheckCircle2 size={18} /> {healthScore}% Здорова
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <ShieldCheck size={18} color="#059669" />
+            <div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Индекс целостности</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>{healthScore}% Норма</div>
             </div>
           </div>
 
-          <div
-            style={{
-              padding: '12px 16px',
-              borderRadius: 12,
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              boxShadow: 'var(--shadow-sm)'
-            }}
-          >
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>
-              Таблиц в системе
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#4f46e5', display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <Layers size={18} /> {totalTables} связанных
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <Layers size={18} color="#2563eb" />
+            <div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Контроль схемы</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>{totalTables} связанных таблиц</div>
             </div>
           </div>
 
-          <div
-            style={{
-              padding: '12px 16px',
-              borderRadius: 12,
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              boxShadow: 'var(--shadow-sm)'
-            }}
-          >
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>
-              Защита от ошибок
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#0284c7', display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <ShieldCheck size={18} /> 0 сломанных связей
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <Database size={18} color="#7c3aed" />
+            <div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Режим транзакций</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>SQLite WAL (ACID)</div>
             </div>
           </div>
 
-          <div
-            style={{
-              padding: '12px 16px',
-              borderRadius: 12,
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              boxShadow: 'var(--shadow-sm)'
-            }}
-          >
-            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>
-              Безопасность
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#d97706', display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <History size={18} /> Откат в 1 клик
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <RotateCcw size={18} color="#d97706" />
+            <div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Защита от потери</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>Point-in-Time откат</div>
             </div>
           </div>
         </div>

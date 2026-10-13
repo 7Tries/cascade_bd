@@ -81,12 +81,12 @@ export function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Soft Friendly Header */}
+      {/* Studio Top Navigation Bar */}
       <header
         style={{
-          background: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid #e2e8f0',
+          background: 'rgba(255, 255, 255, 0.92)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--border-light)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
@@ -100,77 +100,66 @@ export function App() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            height: 68
+            height: 56
           }}
         >
-          {/* Logo & Brand in Soft Style */}
+          {/* Brand Mark */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
               style={{
-                width: 38,
-                height: 38,
-                borderRadius: 12,
-                background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                background: '#0f172a',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#ffffff',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
+                color: '#ffffff'
               }}
             >
-              <ShieldCheck size={22} />
+              <ShieldCheck size={16} />
             </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>
-                  CascadeGuard
-                </span>
-                <span className="badge-soft badge-soft-indigo">Безопасный каскад</span>
-              </div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>
-                Контроль физической и логической целостности базы данных
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 600, color: '#0f172a', letterSpacing: '-0.02em' }}>
+                CascadeGuard
+              </span>
+              <span className="status-pill status-pill-neutral mono-text" style={{ fontSize: 10 }}>
+                studio
+              </span>
             </div>
+            <div style={{ height: 16, width: 1, background: '#e2e8f0', margin: '0 4px' }} />
+            <span style={{ fontSize: 12, color: '#64748b' }}>
+              Relational Integrity & Cascade Engine
+            </span>
           </div>
 
-          {/* Right Action Pills */}
+          {/* System Status & Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div
+            <button
               onClick={() => {
                 setActiveTab('doctor');
                 scrollToWorkspace();
               }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '6px 14px',
-                borderRadius: 9999,
-                background: isHealthy ? '#ecfdf5' : '#fff1f2',
-                border: `1px solid ${isHealthy ? '#a7f3d0' : '#fecdd3'}`,
-                color: isHealthy ? '#059669' : '#e11d48',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-              title="Нажмите для открытия диагностики"
+              className={`status-pill ${isHealthy ? 'status-pill-emerald' : 'status-pill-rose'}`}
+              style={{ cursor: 'pointer', padding: '4px 10px', fontSize: 12 }}
+              title="Перейти к диагностике целостности"
             >
-              <Heart size={14} />
-              <span>Здоровье базы: {integrityAudit?.score || 100}%</span>
-            </div>
+              <Heart size={12} />
+              <span>Целостность: {integrityAudit?.score || 100}%</span>
+            </button>
 
             <button
-              className="btn-soft btn-soft-secondary"
+              className="btn-ui btn-ui-secondary"
               onClick={handleQuickSeed}
-              style={{ fontSize: 12, padding: '7px 14px' }}
+              title="Сбросить все таблицы к исходному корпоративному состоянию"
             >
-              <RotateCcw size={13} /> Сбросить данные
+              <RotateCcw size={13} color="#475569" /> Сбросить данные
             </button>
           </div>
         </div>
       </header>
 
-      {/* Hero Welcome Banner */}
+      {/* Hero Console Summary */}
       <ParallaxHero
         onOpenSimulator={openDefaultSimulator}
         onExploreGraph={() => {
@@ -181,12 +170,12 @@ export function App() {
         totalTables={tables.length || 10}
       />
 
-      {/* Workspace Section */}
+      {/* Main Workspace */}
       <div id="main-workspace" style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px 64px', width: '100%' }}>
-        {/* Intuitive Guide Component */}
+        {/* Help & Architecture Reference */}
         <IntuitiveGuide />
 
-        {/* Navigation Tabs Bar */}
+        {/* Linear-Style Segmented Navigation */}
         <div
           style={{
             display: 'flex',
@@ -194,50 +183,45 @@ export function App() {
             justifyContent: 'space-between',
             flexWrap: 'wrap',
             gap: 12,
-            marginBottom: 22,
-            padding: '6px',
-            background: 'rgba(255, 255, 255, 0.7)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: 16,
-            border: '1px solid #e2e8f0'
+            marginBottom: 20
           }}
         >
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 6, overflowX: 'auto' }}>
+          <div className="segmented-nav">
             <button
               onClick={() => setActiveTab('graph')}
-              className={`nav-pill ${activeTab === 'graph' ? 'active' : ''}`}
+              className={`segmented-tab ${activeTab === 'graph' ? 'active' : ''}`}
             >
-              <Database size={15} /> Интерактивный граф связей
+              <Database size={14} /> Граф зависимостей (DAG)
             </button>
 
             <button
               onClick={() => setActiveTab('data')}
-              className={`nav-pill ${activeTab === 'data' ? 'active' : ''}`}
+              className={`segmented-tab ${activeTab === 'data' ? 'active' : ''}`}
             >
-              <Table size={15} /> Таблицы данных
+              <Table size={14} /> Таблицы данных
             </button>
 
             <button
               onClick={() => setActiveTab('ledger')}
-              className={`nav-pill ${activeTab === 'ledger' ? 'active' : ''}`}
+              className={`segmented-tab ${activeTab === 'ledger' ? 'active' : ''}`}
             >
-              <History size={15} /> Журнал аудита и откат
+              <History size={14} /> Журнал аудита и откат
             </button>
 
             <button
               onClick={() => setActiveTab('doctor')}
-              className={`nav-pill ${activeTab === 'doctor' ? 'active' : ''}`}
+              className={`segmented-tab ${activeTab === 'doctor' ? 'active' : ''}`}
             >
-              <Activity size={15} /> Диагностика базы
+              <Activity size={14} /> Диагностика целостности
             </button>
-          </nav>
+          </div>
 
-          <div style={{ fontSize: 12, color: '#64748b', paddingRight: 12, fontWeight: 500 }}>
-            Таблиц в структуре: <strong style={{ color: '#1e293b' }}>{tables.length}</strong>
+          <div style={{ fontSize: 12, color: '#64748b' }}>
+            Схема базы: <span className="mono-text" style={{ color: '#0f172a', fontWeight: 600 }}>{tables.length}</span> таблиц
           </div>
         </div>
 
-        {/* Tab Content */}
+        {/* Tab Views */}
         <main>
           {activeTab === 'graph' && schemaGraph && (
             <SchemaGraphView
@@ -277,13 +261,13 @@ export function App() {
         />
       )}
 
-      {/* Friendly Soft Footer */}
+      {/* Studio Clean Footer */}
       <footer
         style={{
-          borderTop: '1px solid #e2e8f0',
-          padding: '24px',
+          borderTop: '1px solid var(--border-light)',
+          padding: '16px 24px',
           background: '#ffffff',
-          fontSize: 13,
+          fontSize: 12,
           color: '#64748b',
           marginTop: 'auto'
         }}
@@ -300,12 +284,13 @@ export function App() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <strong style={{ color: '#1e293b' }}>CascadeGuard</strong>
-            <span>— Интеллектуальное каскадное удаление с защитой базы данных</span>
+            <span style={{ fontWeight: 600, color: '#0f172a' }}>CascadeGuard Engine</span>
+            <span>—</span>
+            <span>Автоматический контроль ссылочной целостности и предотвращение появления записей-сирот</span>
           </div>
 
-          <div style={{ fontSize: 12, color: '#94a3b8' }}>
-            Поддержка физической (PRAGMA foreign_keys = ON) и логической целостности
+          <div className="mono-text" style={{ fontSize: 11, color: '#94a3b8' }}>
+            SQLite 3.x WAL • PRAGMA foreign_keys = ON • ACID compliant
           </div>
         </div>
       </footer>

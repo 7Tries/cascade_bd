@@ -22,7 +22,7 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
   onExecutionComplete
 }) => {
   const [policy, setPolicy] = useState('HARD_CASCADE');
-  const [reason, setReason] = useState('Плановое каскадное удаление записи');
+  const [reason, setReason] = useState('Плановое каскадное удаление');
   const [overrideViolations, setOverrideViolations] = useState(false);
 
   const [loadingAnalysis, setLoadingAnalysis] = useState(true);
@@ -44,7 +44,7 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
       const res = await api.dryRunCascade(table, id, policy);
       setAnalysis(res);
     } catch (err: any) {
-      setAnalysisError(err.message || 'Ошибка симуляции каскада');
+      setAnalysisError(err.message || 'Ошибка анализа графа');
     } finally {
       setLoadingAnalysis(false);
     }
@@ -58,7 +58,7 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
       setExecutionResult(res);
       onExecutionComplete();
     } catch (err: any) {
-      setExecutionError(err.message || 'Ошибка выполнения транзакции');
+      setExecutionError(err.message || 'Транзакция отменена сервером');
     } finally {
       setExecuting(false);
     }
@@ -75,8 +75,8 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
-        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(15, 23, 42, 0.5)',
+        backdropFilter: 'blur(4px)',
         zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
@@ -85,92 +85,86 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
       }}
     >
       <div
-        className="soft-card animate-soft-in"
+        className="studio-card animate-enter"
         style={{
           width: '100%',
-          maxWidth: 920,
+          maxWidth: 880,
           maxHeight: '92vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           background: '#ffffff',
           boxShadow: 'var(--shadow-modal)',
-          border: '1px solid #cbd5e1'
+          border: '1px solid var(--border-medium)'
         }}
       >
-        {/* Header */}
+        {/* Header Bar */}
         <div
           style={{
-            padding: '20px 28px',
-            borderBottom: '1px solid #f1f5f9',
+            padding: '16px 20px',
+            borderBottom: '1px solid var(--border-light)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
+            background: '#ffffff'
           }}
         >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span className="badge-soft badge-soft-indigo">Симулятор каскада</span>
-              <span style={{ fontSize: 13, color: '#64748b' }}>Объект:</span>
-              <strong style={{ color: '#1e293b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="status-pill status-pill-rose mono-text" style={{ fontSize: 10 }}>
+                CASCADE SIMULATOR
+              </span>
+              <span style={{ fontSize: 13, color: '#64748b' }}>Цель:</span>
+              <strong className="mono-text" style={{ color: '#0f172a', fontSize: 13 }}>
                 {table} #{id} ({label})
               </strong>
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
-              Предварительный расчет цепочки удалений, проверка бизнес-правил и безопасное выполнение транзакции.
+            <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+              Топологический расчет каскада, проверка целостности внешних ключей и контроль блокировок.
             </p>
           </div>
 
-          <button className="btn-soft btn-soft-secondary" onClick={onClose} style={{ padding: '6px 10px', borderRadius: 8 }}>
-            <X size={16} />
+          <button className="btn-ui btn-ui-ghost" onClick={onClose} style={{ padding: '4px 8px' }}>
+            <X size={15} />
           </button>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: 26, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* Strategy Selection */}
+        {/* Modal Scroll Body */}
+        <div style={{ padding: 20, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {/* Strategy Options */}
           <div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: 10, display: 'block', letterSpacing: '0.04em' }}>
-              Выберите способ удаления
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.03em' }}>
+              Стратегия каскадного удаления
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
               {[
                 {
                   id: 'HARD_CASCADE',
                   title: 'Физический каскад',
-                  desc: 'Удаляет связанные записи снизу вверх с автоматическим расцеплением циклов.',
+                  desc: 'Удаляет зависимые записи снизу вверх с расцеплением циклов.',
                   icon: Zap,
-                  bg: '#fff1f2',
-                  border: '#fecdd3',
-                  accent: '#e11d48'
+                  accent: '#dc2626'
                 },
                 {
                   id: 'ARCHIVE_AND_HARD_DELETE',
-                  title: 'Архив и удаление',
-                  desc: 'Сохраняет снимок всех записей в журнал перед удалением. Позволяет откат в 1 клик.',
+                  title: 'Архив + Удаление',
+                  desc: 'Сохраняет снимок сущностей в аудит перед удалением для отката.',
                   icon: FileText,
-                  bg: '#f5f3ff',
-                  border: '#ddd6fe',
                   accent: '#7c3aed'
                 },
                 {
                   id: 'SOFT_CASCADE',
                   title: 'Мягкое скрытие (Soft)',
-                  desc: 'Помечает все записи как скрытые (is_deleted=1). Физически ничего не удаляется.',
+                  desc: 'Помечает все записи как is_deleted=1 без удаления из SQLite.',
                   icon: ShieldAlert,
-                  bg: '#ecfdf5',
-                  border: '#a7f3d0',
                   accent: '#059669'
                 },
                 {
                   id: 'SAFE_NULLIFY',
-                  title: 'Отвязать (Set Null)',
-                  desc: 'Обнуляет ссылки у дочерних записей, удаляя только саму выбранную запись.',
+                  title: 'Отвязка (Set Null)',
+                  desc: 'Обнуляет ссылки дочерних записей, удаляя только корень.',
                   icon: GitBranch,
-                  bg: '#f0f9ff',
-                  border: '#bae6fd',
-                  accent: '#0284c7'
+                  accent: '#2563eb'
                 }
               ].map(opt => {
                 const Icon = opt.icon;
@@ -180,31 +174,17 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
                     key={opt.id}
                     onClick={() => setPolicy(opt.id)}
                     style={{
-                      background: active ? opt.bg : '#ffffff',
-                      border: `1.5px solid ${active ? opt.accent : '#e2e8f0'}`,
-                      borderRadius: 12,
-                      padding: 14,
+                      background: active ? '#f8fafc' : '#ffffff',
+                      border: `1.5px solid ${active ? '#0f172a' : 'var(--border-light)'}`,
+                      borderRadius: 8,
+                      padding: 12,
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: active ? '0 4px 12px rgba(0, 0, 0, 0.05)' : 'none'
+                      transition: 'all 0.15s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <div
-                        style={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: 6,
-                          background: opt.bg,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: opt.accent
-                        }}
-                      >
-                        <Icon size={15} />
-                      </div>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <Icon size={14} color={active ? '#0f172a' : opt.accent} />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>
                         {opt.title}
                       </span>
                     </div>
@@ -215,111 +195,110 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
             </div>
           </div>
 
-          {/* Audit Reason */}
+          {/* Reason Input */}
           <div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: 6, display: 'block', letterSpacing: '0.04em' }}>
-              Причина удаления (для журнала)
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', marginBottom: 4, display: 'block', letterSpacing: '0.03em' }}>
+              Обоснование операции (записывается в журнал аудита)
             </label>
             <input
               type="text"
-              className="input-soft"
+              className="ui-input"
               style={{ width: '100%' }}
               value={reason}
               onChange={e => setReason(e.target.value)}
-              placeholder="Например: Плановая очистка завершенного проекта"
+              placeholder="Причина операции для журнала аудита..."
             />
           </div>
 
-          {/* Dry Run Simulator Results */}
+          {/* Simulator Dry Run Output */}
           {loadingAnalysis ? (
-            <div style={{ padding: 36, textAlign: 'center', color: '#64748b' }}>
-              <RefreshCw className="animate-spin" size={24} style={{ margin: '0 auto 8px', color: '#6366f1' }} />
-              Симуляция каскадного обхода графа...
+            <div style={{ padding: 32, textAlign: 'center', color: '#64748b', fontSize: 13 }}>
+              <RefreshCw className="animate-spin" size={20} style={{ margin: '0 auto 8px', color: '#0f172a' }} />
+              Расчет зависимостей графа (Dry-Run)...
             </div>
           ) : analysisError ? (
-            <div style={{ padding: 16, background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: 12 }}>
-              <AlertTriangle size={18} color="#e11d48" style={{ marginBottom: 4 }} />
-              <div style={{ color: '#e11d48', fontWeight: 700 }}>Ошибка расчета</div>
-              <div style={{ fontSize: 13, color: '#9f1239' }}>{analysisError}</div>
+            <div style={{ padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8 }}>
+              <div style={{ color: '#dc2626', fontWeight: 600, fontSize: 13 }}>Ошибка расчета графа</div>
+              <div style={{ fontSize: 12, color: '#991b1b', marginTop: 2 }}>{analysisError}</div>
             </div>
           ) : analysis ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {/* Stat Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#fff1f2', border: '1px solid #fecdd3' }}>
-                  <div style={{ fontSize: 11, color: '#e11d48', fontWeight: 600 }}>ЗАТРОНУТО СТРОК</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#9f1239', marginTop: 2 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* Stat Boxes */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid var(--border-light)' }}>
+                  <div style={{ fontSize: 10, color: '#dc2626', fontWeight: 600, letterSpacing: '0.04em' }}>ЗАТРОНУТО СТРОК</div>
+                  <div className="mono-text" style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginTop: 2 }}>
                     {analysis.totalAffected}
                   </div>
                 </div>
 
-                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#eef2ff', border: '1px solid #c7d2fe' }}>
-                  <div style={{ fontSize: 11, color: '#4f46e5', fontWeight: 600 }}>ГЛУБИНА СВЯЗЕЙ</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#3730a3', marginTop: 2 }}>
-                    {analysis.maxDepth} уровня
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid var(--border-light)' }}>
+                  <div style={{ fontSize: 10, color: '#2563eb', fontWeight: 600, letterSpacing: '0.04em' }}>ГЛУБИНА СВЯЗЕЙ</div>
+                  <div className="mono-text" style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginTop: 2 }}>
+                    {analysis.maxDepth} ур.
                   </div>
                 </div>
 
-                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
-                  <div style={{ fontSize: 11, color: '#059669', fontWeight: 600 }}>ТАБЛИЦ В ЦЕПОЧКЕ</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#065f46', marginTop: 2 }}>
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid var(--border-light)' }}>
+                  <div style={{ fontSize: 10, color: '#059669', fontWeight: 600, letterSpacing: '0.04em' }}>ТАБЛИЦ В ЦЕПИ</div>
+                  <div className="mono-text" style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginTop: 2 }}>
                     {analysis.impactedTables.length}
                   </div>
                 </div>
 
-                <div style={{ padding: '12px 16px', borderRadius: 12, background: '#fffbeb', border: '1px solid #fde68a' }}>
-                  <div style={{ fontSize: 11, color: '#d97706', fontWeight: 600 }}>ЦИКЛИЧЕСКИХ СВЯЗЕЙ</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#92400e', marginTop: 2 }}>
-                    {analysis.cyclicEdgesToUnlink} расцеплено
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid var(--border-light)' }}>
+                  <div style={{ fontSize: 10, color: '#d97706', fontWeight: 600, letterSpacing: '0.04em' }}>ЦИКЛОВ</div>
+                  <div className="mono-text" style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginTop: 2 }}>
+                    {analysis.cyclicEdgesToUnlink}
                   </div>
                 </div>
               </div>
 
               {/* Table Breakdown */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: '#64748b' }}>Будет удалено по таблицам:</span>
+                <span style={{ fontSize: 12, color: '#64748b' }}>Удаление по таблицам:</span>
                 {Object.entries(analysis.affectedCounts).map(([tbl, cnt]) => (
-                  <span key={tbl} className="badge-soft badge-soft-slate">
-                    {tbl}: <strong style={{ color: '#1e293b', marginLeft: 4 }}>{cnt}</strong>
+                  <span key={tbl} className="status-pill status-pill-neutral mono-text" style={{ fontSize: 11 }}>
+                    {tbl}: <strong style={{ color: '#0f172a', marginLeft: 3 }}>{cnt}</strong>
                   </span>
                 ))}
               </div>
 
-              {/* Logical Invariant Compliance Guardrails */}
+              {/* Violations / Guardrails */}
               {analysis.violations.length > 0 ? (
                 <div
                   style={{
-                    background: '#fff1f2',
-                    border: '1px solid #fecdd3',
-                    borderRadius: 12,
-                    padding: 16
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: 8,
+                    padding: 14
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <ShieldAlert size={18} color="#e11d48" />
-                    <span style={{ fontWeight: 700, color: '#e11d48', fontSize: 13 }}>
-                      Защита бизнес-правил: обнаружены ограничения ({analysis.violations.length})
+                    <ShieldAlert size={16} color="#dc2626" />
+                    <span style={{ fontWeight: 600, color: '#dc2626', fontSize: 13 }}>
+                      Ограничения целостности ({analysis.violations.length})
                     </span>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
                     {analysis.violations.map((v, idx) => (
                       <div
                         key={idx}
                         style={{
                           fontSize: 12,
                           background: '#ffffff',
-                          padding: '10px 14px',
-                          borderRadius: 8,
-                          border: '1px solid #fecdd3',
+                          padding: '8px 12px',
+                          borderRadius: 6,
+                          border: '1px solid #fecaca',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 10
+                          gap: 8
                         }}
                       >
-                        <span className={v.severity === 'CRITICAL_BLOCKER' ? 'badge-soft badge-soft-rose' : 'badge-soft badge-soft-amber'}>
-                          {v.rule === 'FINANCIAL_COMPLIANCE_LOCK' ? 'ОПЛАЧЕННЫЙ СЧЕТ' : v.rule}
+                        <span className="status-pill status-pill-rose mono-text" style={{ fontSize: 10 }}>
+                          {v.rule}
                         </span>
-                        <span style={{ color: '#475569' }}>{v.message}</span>
+                        <span style={{ color: '#334155' }}>{v.message}</span>
                       </div>
                     ))}
                   </div>
@@ -329,14 +308,13 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 10,
+                        gap: 8,
                         fontSize: 12,
-                        color: '#92400e',
+                        color: '#991b1b',
                         cursor: 'pointer',
-                        padding: '10px 14px',
-                        background: '#fef3c7',
-                        borderRadius: 8,
-                        border: '1px solid #fde68a'
+                        padding: '8px 12px',
+                        background: '#fee2e2',
+                        borderRadius: 6
                       }}
                     >
                       <input
@@ -345,7 +323,7 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
                         onChange={e => setOverrideViolations(e.target.checked)}
                       />
                       <span>
-                        <strong>Подтверждаю принудительное удаление:</strong> Я понимаю, что в цепочке есть оплаченные счета, и беру ответственность за их удаление.
+                        <strong>Принудительное подтверждение:</strong> я подтверждаю снятие блокировки для удаления защищенных записей.
                       </span>
                     </label>
                   )}
@@ -355,81 +333,83 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
                   style={{
                     background: '#ecfdf5',
                     border: '1px solid #a7f3d0',
-                    borderRadius: 12,
-                    padding: '12px 16px',
+                    borderRadius: 8,
+                    padding: '10px 14px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 8,
-                    fontSize: 13,
+                    fontSize: 12,
                     color: '#065f46'
                   }}
                 >
-                  <CheckCircle size={16} color="#059669" />
-                  <span>Правила соблюдены: Никаких препятствий нет. Данные готовы к безопасному удалению.</span>
+                  <CheckCircle size={15} color="#059669" />
+                  <span>Инварианты соблюдены: препятствий для каскадного удаления нет.</span>
                 </div>
               )}
 
-              {/* Topological Leaves-First Sequence */}
+              {/* Topological leaves-first sequence */}
               <div
                 style={{
                   background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 12,
-                  padding: 14
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 8,
+                  padding: 12
                 }}
               >
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: 8 }}>
-                  Безопасный порядок удаления (снизу вверх)
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: 6, letterSpacing: '0.03em' }}>
+                  Топологический порядок удаления (листья → корень)
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                   {analysis.deletionOrder.map((tbl, idx) => (
                     <React.Fragment key={tbl}>
-                      <span className="badge-soft badge-soft-indigo" style={{ fontSize: 11 }}>
+                      <span className="status-pill status-pill-neutral mono-text" style={{ fontSize: 11 }}>
                         {idx + 1}. {tbl}
                       </span>
                       {idx < analysis.deletionOrder.length - 1 && (
-                        <ArrowRight size={12} color="#94a3b8" />
+                        <ArrowRight size={11} color="#94a3b8" />
                       )}
                     </React.Fragment>
                   ))}
                 </div>
               </div>
 
-              {/* Execution Result Log */}
+              {/* Execution Trace */}
               {executionResult && (
                 <div
-                  className="animate-soft-in"
+                  className="animate-enter"
                   style={{
                     background: '#ecfdf5',
                     border: '1px solid #a7f3d0',
-                    borderRadius: 12,
-                    padding: 18
+                    borderRadius: 8,
+                    padding: 14
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <CheckCircle size={18} color="#059669" />
-                      <span style={{ fontWeight: 700, color: '#065f46' }}>
-                        Каскадное удаление успешно выполнено ({executionResult.executionId})
-                      </span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <CheckCircle size={16} color="#059669" />
+                      <strong style={{ color: '#065f46', fontSize: 13 }}>
+                        Каскад выполнен ({executionResult.executionId})
+                      </strong>
                     </div>
-                    <span className="badge-soft badge-soft-emerald">
+                    <span className="status-pill status-pill-emerald mono-text" style={{ fontSize: 10 }}>
                       {executionResult.durationMs} мс
                     </span>
                   </div>
 
-                  <div style={{ fontSize: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ fontSize: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {executionResult.traceSteps.map(step => (
                       <div
                         key={step.step}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 10,
-                          color: '#475569'
+                          gap: 8,
+                          color: '#334155'
                         }}
                       >
-                        <span style={{ color: '#6366f1', fontWeight: 600 }}>[{step.step}]</span>
+                        <span className="mono-text" style={{ color: '#2563eb', fontWeight: 600 }}>
+                          [{step.step}]
+                        </span>
                         <span>{step.action}</span>
                         {step.status && (
                           <span style={{ color: '#059669', marginLeft: 'auto', fontSize: 11, fontWeight: 600 }}>
@@ -443,8 +423,8 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
               )}
 
               {executionError && (
-                <div style={{ padding: 14, background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: 8, color: '#e11d48', fontSize: 13 }}>
-                  <AlertTriangle size={16} style={{ display: 'inline', marginRight: 6 }} />
+                <div style={{ padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 12 }}>
+                  <AlertTriangle size={14} style={{ display: 'inline', marginRight: 6 }} />
                   Транзакция отменена: {executionError}
                 </div>
               )}
@@ -452,40 +432,38 @@ export const CascadeStudio: React.FC<CascadeStudioProps> = ({
           ) : null}
         </div>
 
-        {/* Footer */}
+        {/* Footer Actions */}
         <div
           style={{
-            padding: '16px 28px',
-            borderTop: '1px solid #f1f5f9',
+            padding: '12px 20px',
+            borderTop: '1px solid var(--border-light)',
             background: '#f8fafc',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}
         >
-          <button className="btn-soft btn-soft-secondary" onClick={onClose}>
-            Закрыть
+          <button className="btn-ui btn-ui-secondary" onClick={onClose}>
+            {executionResult ? 'Готово' : 'Отмена'}
           </button>
 
           {!executionResult && (
             <button
-              className="btn-soft btn-soft-danger"
+              className="btn-ui btn-ui-danger-filled"
               disabled={!canProceed || executing || loadingAnalysis}
               onClick={handleExecute}
               style={{
                 opacity: (!canProceed || executing || loadingAnalysis) ? 0.45 : 1,
-                cursor: (!canProceed || executing || loadingAnalysis) ? 'not-allowed' : 'pointer',
-                padding: '10px 24px',
-                fontSize: 13
+                cursor: (!canProceed || executing || loadingAnalysis) ? 'not-allowed' : 'pointer'
               }}
             >
               {executing ? (
                 <>
-                  <RefreshCw className="animate-spin" size={14} /> Выполнение каскада...
+                  <RefreshCw className="animate-spin" size={13} /> Фиксация транзакции...
                 </>
               ) : (
                 <>
-                  <Zap size={14} /> Подтвердить и удалить
+                  <Zap size={13} /> Выполнить удаление
                 </>
               )}
             </button>

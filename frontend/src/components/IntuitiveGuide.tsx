@@ -1,57 +1,62 @@
 import React, { useState } from 'react';
-import { Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronUp, Layers, CheckCircle2, ShieldAlert, RotateCcw } from 'lucide-react';
 
 export const IntuitiveGuide: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div
-      className="soft-card"
+      className="studio-card"
       style={{
-        padding: '18px 24px',
-        marginBottom: 24,
-        background: 'linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%)',
-        border: '1px solid #e2e8f0'
+        padding: '16px 20px',
+        marginBottom: 20,
+        background: '#ffffff'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
               width: 32,
               height: 32,
-              borderRadius: 10,
-              background: '#eef2ff',
+              borderRadius: 8,
+              background: '#f1f5f9',
+              border: '1px solid #e2e8f0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#6366f1'
+              color: '#0f172a'
             }}
           >
-            <Sparkles size={18} />
+            <BookOpen size={16} />
           </div>
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
-              Как это работает? Простое руководство
-            </h3>
-            <p style={{ fontSize: 12, color: '#64748b' }}>
-              Каскадное удаление позволяет безопасно удалять данные вместе со всеми зависимостями без риска сломать базу данных.
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>
+                Справка: архитектура каскада и безопасность данных
+              </h3>
+              <span className="status-pill status-pill-neutral mono-text" style={{ fontSize: 10 }}>
+                RFC-9241
+              </span>
+            </div>
+            <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+              Регламент каскадных операций: топологический обход DAG, проверка инвариантов и протоколирование транзакций.
             </p>
           </div>
         </div>
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="btn-soft btn-soft-secondary"
-          style={{ padding: '6px 12px', fontSize: 12 }}
+          className="btn-ui btn-ui-secondary"
+          style={{ fontSize: 12, padding: '5px 10px' }}
         >
           {isOpen ? (
             <>
-              Свернуть <ChevronUp size={14} />
+              Скрыть справку <ChevronUp size={13} />
             </>
           ) : (
             <>
-              Подробнее <ChevronDown size={14} />
+              Показать справку <ChevronDown size={13} />
             </>
           )}
         </button>
@@ -59,85 +64,97 @@ export const IntuitiveGuide: React.FC = () => {
 
       {isOpen && (
         <div
-          className="animate-soft-in"
+          className="animate-enter"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 16,
-            marginTop: 18,
-            paddingTop: 18,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 12,
+            marginTop: 14,
+            paddingTop: 14,
             borderTop: '1px solid #f1f5f9'
           }}
         >
           {/* Step 1 */}
           <div
             style={{
-              padding: 14,
-              borderRadius: 12,
+              padding: 12,
+              borderRadius: 8,
               background: '#f8fafc',
               border: '1px solid #e2e8f0'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span className="badge-soft badge-soft-indigo">Шаг 1</span>
-              <strong style={{ fontSize: 13, color: '#1e293b' }}>Выбор объекта</strong>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span className="mono-text" style={{ fontSize: 11, fontWeight: 600, color: '#2563eb' }}>
+                01
+              </span>
+              <Layers size={13} color="#2563eb" />
+              <strong style={{ fontSize: 12, color: '#0f172a' }}>Выбор корневой сущности</strong>
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.4 }}>
-              Вкладка <strong>«Таблицы данных»</strong>: выберите любую запись (например, отдел или задачу) и нажмите красную кнопку <strong>«Удалить»</strong>.
+            <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.45 }}>
+              Во вкладке <strong>«Таблицы данных»</strong> найдите целевую запись. Кнопка «Удалить» инициирует симуляцию каскадного графа.
             </p>
           </div>
 
           {/* Step 2 */}
           <div
             style={{
-              padding: 14,
-              borderRadius: 12,
+              padding: 12,
+              borderRadius: 8,
               background: '#f8fafc',
               border: '1px solid #e2e8f0'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span className="badge-soft badge-soft-purple">Шаг 2</span>
-              <strong style={{ fontSize: 13, color: '#1e293b' }}>Предпросмотр (Dry-Run)</strong>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span className="mono-text" style={{ fontSize: 11, fontWeight: 600, color: '#7c3aed' }}>
+                02
+              </span>
+              <CheckCircle2 size={13} color="#7c3aed" />
+              <strong style={{ fontSize: 12, color: '#0f172a' }}>Предварительный Dry-Run</strong>
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.4 }}>
-              Симулятор заранее построит дерево и покажет, сколько связанных задач, документов и логов будет затронуто, еще до удаления.
+            <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.45 }}>
+              Движок строит топологический порядок листьев дерева и вычисляет точный список затронутых строк без физической модификации БД.
             </p>
           </div>
 
           {/* Step 3 */}
           <div
             style={{
-              padding: 14,
-              borderRadius: 12,
+              padding: 12,
+              borderRadius: 8,
               background: '#f8fafc',
               border: '1px solid #e2e8f0'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span className="badge-soft badge-soft-amber">Шаг 3</span>
-              <strong style={{ fontSize: 13, color: '#1e293b' }}>Защита правил</strong>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span className="mono-text" style={{ fontSize: 11, fontWeight: 600, color: '#d97706' }}>
+                03
+              </span>
+              <ShieldAlert size={13} color="#d97706" />
+              <strong style={{ fontSize: 12, color: '#0f172a' }}>Контроль инвариантов</strong>
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.4 }}>
-              Если проект содержит оплаченные счета (статус <strong>ОПЛАЧЕН</strong>), система заблокирует удаление для защиты налоговых данных.
+            <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.45 }}>
+              Бизнес-правила блокируют удаление защищенных объектов (например, инвойсы со статусом <code>PAID</code>) для предотвращения финансовых ошибок.
             </p>
           </div>
 
           {/* Step 4 */}
           <div
             style={{
-              padding: 14,
-              borderRadius: 12,
+              padding: 12,
+              borderRadius: 8,
               background: '#f8fafc',
               border: '1px solid #e2e8f0'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span className="badge-soft badge-soft-emerald">Шаг 4</span>
-              <strong style={{ fontSize: 13, color: '#1e293b' }}>Откат в 1 клик</strong>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span className="mono-text" style={{ fontSize: 11, fontWeight: 600, color: '#059669' }}>
+                04
+              </span>
+              <RotateCcw size={13} color="#059669" />
+              <strong style={{ fontSize: 12, color: '#0f172a' }}>Point-in-Time откат</strong>
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.4 }}>
-              Случайно удалили важное? Вкладка <strong>«Журнал аудита»</strong> позволяет моментально вернуть все удаленные записи назад!
+            <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.45 }}>
+              Снимки поддерева сериализуются в таблицу аудита. В любой момент каскадное удаление можно десериализовать обратно в БД.
             </p>
           </div>
         </div>

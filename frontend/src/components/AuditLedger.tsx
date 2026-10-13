@@ -47,19 +47,19 @@ export const AuditLedger: React.FC<AuditLedgerProps> = ({ onRestored }) => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Header Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, color: '#1e293b' }}>
-            <History size={20} color="#6366f1" /> Журнал аудита и откат (Rollback)
+          <h2 style={{ fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, color: '#0f172a' }}>
+            <History size={16} color="#0f172a" /> Журнал аудита транзакций и откат (Rollback)
           </h2>
-          <p style={{ fontSize: 13, color: '#64748b' }}>
-            Каждая операция сохраняет полный снимок поддерева. Любое каскадное удаление можно отменить в один клик.
+          <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+            Сериализованные снимки поддеревьев каскадных операций. Возможность точечного восстановления состояния данных.
           </p>
         </div>
 
-        <button className="btn-soft btn-soft-secondary" onClick={loadLedger} disabled={loading}>
+        <button className="btn-ui btn-ui-secondary" onClick={loadLedger} disabled={loading}>
           <RefreshCw className={loading ? 'animate-spin' : ''} size={13} /> Обновить журнал
         </button>
       </div>
@@ -67,58 +67,60 @@ export const AuditLedger: React.FC<AuditLedgerProps> = ({ onRestored }) => {
       {/* Restore Success Banner */}
       {restoreResult && (
         <div
-          className="animate-soft-in"
+          className="animate-enter"
           style={{
             background: '#ecfdf5',
             border: '1px solid #a7f3d0',
-            borderRadius: 14,
-            padding: 18
+            borderRadius: 8,
+            padding: 14
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CheckCircle size={18} color="#059669" />
-              <strong style={{ color: '#065f46' }}>
-                Данные успешно восстановлены ({restoreResult.executionId})
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <CheckCircle size={16} color="#059669" />
+              <strong style={{ color: '#065f46', fontSize: 13 }}>
+                Транзакция успешно откатана ({restoreResult.executionId})
               </strong>
             </div>
-            <span className="badge-soft badge-soft-emerald">{restoreResult.durationMs} мс</span>
+            <span className="status-pill status-pill-emerald mono-text" style={{ fontSize: 10 }}>
+              {restoreResult.durationMs} мс
+            </span>
           </div>
-          <p style={{ fontSize: 13, color: '#047857' }}>
-            Восстановлено {restoreResult.totalRestored} связанных сущностей. База данных полностью целостна!
+          <p style={{ fontSize: 12, color: '#047857' }}>
+            Восстановлено {restoreResult.totalRestored} связанных записей. Ссылочная целостность базы данных полностью соблюдена.
           </p>
         </div>
       )}
 
       {restoreError && (
-        <div style={{ padding: 14, background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: 12, color: '#e11d48', fontSize: 13 }}>
-          <AlertCircle size={16} style={{ display: 'inline', marginRight: 6 }} />
-          Ошибка отката: {restoreError}
+        <div style={{ padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 12 }}>
+          <AlertCircle size={14} style={{ display: 'inline', marginRight: 6 }} />
+          Ошибка восстановления: {restoreError}
         </div>
       )}
 
-      {/* Table */}
-      <div className="soft-card" style={{ overflowX: 'auto' }}>
+      {/* Ledger Table */}
+      <div className="studio-card" style={{ overflowX: 'auto' }}>
         {loading && ledger.length === 0 ? (
-          <div style={{ padding: 48, textAlign: 'center', color: '#64748b' }}>
-            Загрузка журнала аудита...
+          <div style={{ padding: 48, textAlign: 'center', color: '#64748b', fontSize: 13 }}>
+            Загрузка записей аудита...
           </div>
         ) : ledger.length === 0 ? (
           <div style={{ padding: 48, textAlign: 'center', color: '#64748b' }}>
-            <FileText size={32} style={{ margin: '0 auto 10px', opacity: 0.3 }} />
-            <p style={{ fontWeight: 600, color: '#1e293b' }}>Журнал пока пуст</p>
-            <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
-              Удалите любую запись в Проводнике данных, чтобы здесь появился снимок для отката.
+            <FileText size={28} style={{ margin: '0 auto 8px', color: '#94a3b8' }} />
+            <p style={{ fontWeight: 600, color: '#0f172a', fontSize: 13 }}>Журнал аудита пока пуст</p>
+            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+              После выполнения каскадного удаления здесь появится снимок поддерева для отката.
             </p>
           </div>
         ) : (
-          <table className="soft-table">
+          <table className="studio-grid">
             <thead>
               <tr>
                 <th>ID ОПЕРАЦИИ</th>
-                <th>СПОСОБ</th>
-                <th>УДАЛЕННЫЙ ОБЪЕКТ</th>
-                <th>ЗАТРОНУТО СТРОК</th>
+                <th>РЕЖИМ</th>
+                <th>ОБЪЕКТ</th>
+                <th>СТРОК</th>
                 <th>ПРИЧИНА</th>
                 <th>ВРЕМЯ</th>
                 <th>СТАТУС</th>
@@ -136,22 +138,24 @@ export const AuditLedger: React.FC<AuditLedgerProps> = ({ onRestored }) => {
 
                 return (
                   <tr key={item.id}>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#4f46e5' }}>
+                    <td className="mono-text" style={{ fontWeight: 600, color: '#2563eb' }}>
                       {item.execution_id}
                     </td>
                     <td>
-                      <span className="badge-soft badge-soft-indigo">{item.policy}</span>
+                      <span className="status-pill status-pill-neutral mono-text" style={{ fontSize: 10 }}>
+                        {item.policy}
+                      </span>
                     </td>
                     <td>
-                      <strong style={{ color: '#1e293b' }}>{item.root_table}</strong> #{item.root_id}
+                      <strong style={{ color: '#0f172a' }}>{item.root_table}</strong> <span className="mono-text">#{item.root_id}</span>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                        <span className="badge-soft badge-soft-rose" style={{ fontSize: 10 }}>
-                          Всего: {totalRows}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+                        <span className="status-pill status-pill-rose mono-text" style={{ fontSize: 10 }}>
+                          {totalRows} всего
                         </span>
                         {Object.entries(summaryObj).map(([tbl, cnt]) => (
-                          <span key={tbl} style={{ fontSize: 11, color: '#64748b' }}>
+                          <span key={tbl} className="mono-text" style={{ fontSize: 11, color: '#64748b' }}>
                             {tbl}:{cnt}
                           </span>
                         ))}
@@ -160,28 +164,29 @@ export const AuditLedger: React.FC<AuditLedgerProps> = ({ onRestored }) => {
                     <td style={{ fontSize: 12, color: '#475569' }}>
                       {item.reason || 'Ручное удаление'}
                     </td>
-                    <td style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
+                    <td className="mono-text" style={{ fontSize: 11, color: '#94a3b8' }}>
                       {item.created_at}
                     </td>
                     <td>
                       {item.restored === 1 ? (
-                        <span className="badge-soft badge-soft-emerald">Восстановлено</span>
+                        <span className="status-pill status-pill-emerald">Восстановлено</span>
                       ) : (
-                        <span className="badge-soft badge-soft-slate">В архиве</span>
+                        <span className="status-pill status-pill-neutral">В архиве</span>
                       )}
                     </td>
                     <td>
                       {item.restored === 1 ? (
-                        <span style={{ fontSize: 11, color: '#94a3b8' }}>Уже в базе</span>
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>Активно в БД</span>
                       ) : (
                         <button
-                          className="btn-soft btn-soft-success"
-                          style={{ padding: '5px 12px', fontSize: 11, borderRadius: 8 }}
+                          className="btn-ui btn-ui-secondary"
+                          style={{ padding: '3px 8px', fontSize: 11 }}
                           disabled={restoringId === item.id}
                           onClick={() => handleRestore(item.id)}
+                          title="Восстановить удаленные записи"
                         >
-                          <RotateCcw size={12} className={restoringId === item.id ? 'animate-spin' : ''} />
-                          {restoringId === item.id ? 'Откат...' : 'Восстановить'}
+                          <RotateCcw size={11} className={restoringId === item.id ? 'animate-spin' : ''} />
+                          {restoringId === item.id ? 'Откат...' : 'Откатить'}
                         </button>
                       )}
                     </td>

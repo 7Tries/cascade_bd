@@ -36,11 +36,11 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
     setLoading(true);
     try {
       const res = await api.injectChaos();
-      setActionMessage(`Тест хаоса: ${res.message}`);
+      setActionMessage(`Хаос-тест: ${res.message}`);
       await runAudit();
       onDatabaseMutated();
     } catch (err: any) {
-      setActionMessage(`Ошибка теста хаоса: ${err.message}`);
+      setActionMessage(`Ошибка хаос-теста: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -78,38 +78,38 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
   const isHealthy = audit?.score === 100;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Top Banner */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Header Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, color: '#1e293b' }}>
-            <Activity size={20} color={isHealthy ? '#059669' : '#e11d48'} />
-            Доктор целостности базы данных
+          <h2 style={{ fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, color: '#0f172a' }}>
+            <Activity size={16} color={isHealthy ? '#059669' : '#dc2626'} />
+            Диагностика физической и логической целостности
           </h2>
-          <p style={{ fontSize: 13, color: '#64748b' }}>
-            Автоматическая проверка физического хранилища страниц SQLite, ссылок внешних ключей и бизнес-инвариантов.
+          <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+            Контроль страниц SQLite B-Tree, целостности внешних ключей и соблюдения инвариантов бизнес-логики.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="btn-soft btn-soft-secondary" onClick={runAudit} disabled={loading}>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <button className="btn-ui btn-ui-secondary" onClick={runAudit} disabled={loading}>
             <RefreshCw className={loading ? 'animate-spin' : ''} size={13} /> Повторный аудит
           </button>
-          <button className="btn-soft btn-soft-amber" onClick={handleResetSeed} disabled={loading}>
-            <RotateCcw size={13} /> Сбросить и наполнить
+          <button className="btn-ui btn-ui-secondary" onClick={handleResetSeed} disabled={loading}>
+            <RotateCcw size={13} /> Перезаполнить БД
           </button>
         </div>
       </div>
 
       {actionMessage && (
         <div
-          className="animate-soft-in"
+          className="animate-enter"
           style={{
-            padding: '14px 18px',
+            padding: '10px 14px',
             background: '#fffbeb',
             border: '1px solid #fde68a',
-            borderRadius: 12,
-            fontSize: 13,
+            borderRadius: 8,
+            fontSize: 12,
             color: '#b45309'
           }}
         >
@@ -117,150 +117,151 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
         </div>
       )}
 
-      {/* Health Overview Cards */}
+      {/* Metrics Grid */}
       {audit && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
           {/* Integrity Score */}
           <div
-            className="soft-card"
+            className="studio-card"
             style={{
-              padding: 22,
-              borderTop: `4px solid ${isHealthy ? '#10b981' : '#f43f5e'}`,
+              padding: 18,
+              borderTop: `3px solid ${isHealthy ? '#059669' : '#dc2626'}`,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between'
             }}
           >
             <div>
-              <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
-                Индекс здоровья базы
+              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Индекс целостности
               </div>
               <div
+                className="mono-text"
                 style={{
-                  fontSize: 38,
-                  fontWeight: 800,
-                  color: isHealthy ? '#059669' : '#e11d48',
-                  marginTop: 6
+                  fontSize: 32,
+                  fontWeight: 700,
+                  color: isHealthy ? '#059669' : '#dc2626',
+                  marginTop: 4
                 }}
               >
                 {audit.score}%
               </div>
             </div>
-            <div style={{ marginTop: 14 }}>
-              <span className={isHealthy ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-rose'}>
-                {isHealthy ? 'Безупречно' : 'Обнаружены аномалии'} ({audit.totalIssues} проблем)
+            <div style={{ marginTop: 12 }}>
+              <span className={`status-pill ${isHealthy ? 'status-pill-emerald' : 'status-pill-rose'}`}>
+                {isHealthy ? 'Норма' : 'Аномалии'} ({audit.totalIssues} проблем)
               </span>
             </div>
           </div>
 
           {/* Physical Storage */}
-          <div className="soft-card" style={{ padding: 22, borderTop: '4px solid #6366f1' }}>
-            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+          <div className="studio-card" style={{ padding: 18, borderTop: '3px solid #2563eb' }}>
+            <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Физическое хранилище B-Tree
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Server size={18} color="#6366f1" />
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Server size={15} color="#2563eb" />
               PRAGMA integrity_check
             </div>
-            <div style={{ marginTop: 18 }}>
-              <span className={audit.physicalStatus === 'OK' ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-rose'}>
+            <div style={{ marginTop: 16 }}>
+              <span className={`status-pill ${audit.physicalStatus === 'OK' ? 'status-pill-emerald' : 'status-pill-rose'}`}>
                 Страницы: {audit.physicalStatus}
               </span>
             </div>
           </div>
 
-          {/* Referential Integrity */}
-          <div className="soft-card" style={{ padding: 22, borderTop: '4px solid #059669' }}>
-            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
-              Целостность внешних ключей
+          {/* Foreign Keys */}
+          <div className="studio-card" style={{ padding: 18, borderTop: '3px solid #059669' }}>
+            <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Контроль внешних ключей
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ShieldCheck size={18} color="#059669" />
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <ShieldCheck size={15} color="#059669" />
               PRAGMA foreign_key_check
             </div>
-            <div style={{ marginTop: 18 }}>
-              <span className={audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-rose'}>
-                {audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? '0 сломанных связей' : `${audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length} сломанных FK`}
+            <div style={{ marginTop: 16 }}>
+              <span className={`status-pill ${audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? 'status-pill-emerald' : 'status-pill-rose'}`}>
+                {audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? '0 сиротских FK' : `${audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length} сломанных FK`}
               </span>
             </div>
           </div>
 
-          {/* Invariants */}
-          <div className="soft-card" style={{ padding: 22, borderTop: '4px solid #f59e0b' }}>
-            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+          {/* Business Invariants */}
+          <div className="studio-card" style={{ padding: 18, borderTop: '3px solid #d97706' }}>
+            <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Инварианты бизнес-логики
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Database size={18} color="#d97706" />
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Database size={15} color="#d97706" />
               Полиморфные связи
             </div>
-            <div style={{ marginTop: 18 }}>
-              <span className={audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-amber'}>
-                {audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? '100% инвариантов в норме' : `${audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length} предупреждений`}
+            <div style={{ marginTop: 16 }}>
+              <span className={`status-pill ${audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? 'status-pill-emerald' : 'status-pill-amber'}`}>
+                {audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? '100% инвариантов' : `${audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length} предупреждений`}
               </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Chaos Simulator & Auto-Repair */}
-      <div className="soft-card" style={{ padding: 24, background: 'linear-gradient(135deg, #ffffff 0%, #fffbeb 100%)', border: '1px solid #fde68a' }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: '#1e293b' }}>
-          Тестирование устойчивости (Chaos Test)
+      {/* Stress/Chaos Testing Suite */}
+      <div className="studio-card" style={{ padding: 18, background: '#f8fafc' }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, color: '#0f172a' }}>
+          Тестирование устойчивости и авто-восстановление (Chaos Mode)
         </h3>
-        <p style={{ fontSize: 13, color: '#64748b', marginBottom: 18, maxWidth: 800 }}>
-          Вы можете намеренно внести сломанную запись в базу, чтобы проверить, как Доктор Целостности её мгновенно обнаружит, и затем нажать кнопку авто-исправления.
+        <p style={{ fontSize: 12, color: '#64748b', marginBottom: 14, maxWidth: 840, lineHeight: 1.45 }}>
+          Намеренное создание записей-сирот для проверки диагностического сканера. Алгоритм восстановления автоматически выявляет нарушенные связи и производит очистку сиротских записей.
         </p>
 
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <button className="btn-soft btn-soft-danger" onClick={handleInjectChaos} disabled={loading}>
-            <Bug size={15} /> Внести сломанную запись (Тест)
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn-ui btn-ui-danger" onClick={handleInjectChaos} disabled={loading}>
+            <Bug size={13} /> Симулировать сбой (Хаос-тест)
           </button>
 
-          <button className="btn-soft btn-soft-success" onClick={handleRepair} disabled={loading || isHealthy}>
-            <Wrench size={15} /> Автоматически исправить базу
+          <button className="btn-ui btn-ui-primary" onClick={handleRepair} disabled={loading || isHealthy}>
+            <Wrench size={13} /> Автоматически восстановить базу
           </button>
         </div>
       </div>
 
-      {/* Issues List */}
-      <div className="soft-card" style={{ padding: 24 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: '#1e293b' }}>
-          Отчет диагностики базы ({audit?.issues.length || 0} аномалий)
+      {/* Diagnostic Findings */}
+      <div className="studio-card" style={{ padding: 18 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: '#0f172a' }}>
+          Диагностический отчет ({audit?.issues.length || 0} аномалий)
         </h3>
 
         {audit?.issues.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: '#059669' }}>
-            <CheckCircle size={36} style={{ margin: '0 auto 10px', color: '#10b981' }} />
-            <p style={{ fontWeight: 700, fontSize: 16, color: '#1e293b' }}>База данных полностью здорова</p>
-            <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
-              Все внешние ключи соблюдены, висячих записей нет, физическое хранилище целостно.
+          <div style={{ padding: 28, textAlign: 'center', color: '#059669' }}>
+            <CheckCircle size={32} style={{ margin: '0 auto 8px', color: '#059669' }} />
+            <p style={{ fontWeight: 600, fontSize: 14, color: '#0f172a' }}>Целостность базы данных подтверждена</p>
+            <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+              Все внешние ключи валидны, B-Tree страницы SQLite без повреждений, сиротских записей не обнаружено.
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {audit?.issues.map((issue, idx) => (
               <div
                 key={idx}
                 style={{
-                  padding: '14px 18px',
+                  padding: '10px 14px',
                   background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 10,
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 6,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: 12
+                  gap: 10
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span className={issue.severity === 'CRITICAL' ? 'badge-soft badge-soft-rose' : (issue.severity === 'HIGH' ? 'badge-soft badge-soft-amber' : 'badge-soft badge-soft-slate')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className={`status-pill ${issue.severity === 'CRITICAL' ? 'status-pill-rose' : (issue.severity === 'HIGH' ? 'status-pill-amber' : 'status-pill-neutral')} mono-text`} style={{ fontSize: 10 }}>
                     {issue.type}
                   </span>
-                  <span style={{ fontSize: 13, color: '#1e293b' }}>{issue.detail}</span>
+                  <span style={{ fontSize: 12, color: '#0f172a' }}>{issue.detail}</span>
                 </div>
 
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#94a3b8' }}>
+                <span className="mono-text" style={{ fontSize: 11, color: '#64748b' }}>
                   {issue.table} {issue.rowId ? `#${issue.rowId}` : ''}
                 </span>
               </div>

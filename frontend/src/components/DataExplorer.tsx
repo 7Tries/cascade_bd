@@ -56,9 +56,9 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Table Selector Pills */}
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6 }}>
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
         {tables.map(tbl => {
           const isSelected = tbl.name === selectedTable;
           const tr = TABLE_TRANSLATIONS[tbl.name];
@@ -66,24 +66,26 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
             <button
               key={tbl.name}
               onClick={() => onSelectTable(tbl.name)}
-              className={isSelected ? 'btn-soft btn-soft-primary' : 'btn-soft btn-soft-secondary'}
+              className={isSelected ? 'btn-ui btn-ui-primary' : 'btn-ui btn-ui-secondary'}
               style={{
                 fontSize: 12,
                 whiteSpace: 'nowrap',
-                padding: '8px 14px',
-                borderRadius: 12
+                padding: '6px 12px',
+                borderRadius: 7
               }}
             >
-              <Table size={14} />
+              <Table size={13} />
               <span>{tr ? tr.title.split(' ')[0] : tbl.name}</span>
               <span
+                className="mono-text"
                 style={{
-                  background: isSelected ? 'rgba(255, 255, 255, 0.25)' : '#f1f5f9',
-                  color: isSelected ? '#ffffff' : '#64748b',
-                  padding: '2px 7px',
-                  borderRadius: 9999,
-                  fontSize: 11,
-                  fontWeight: 700
+                  background: isSelected ? 'rgba(255, 255, 255, 0.2)' : '#f1f5f9',
+                  color: isSelected ? '#ffffff' : '#475569',
+                  padding: '1px 6px',
+                  borderRadius: 4,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  marginLeft: 2
                 }}
               >
                 {tbl.activeCount}
@@ -93,63 +95,64 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
         })}
       </div>
 
-      {/* Table Header & Search Filter */}
-      <div className="soft-card" style={{ padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+      {/* Table Information & Filter Bar */}
+      <div className="studio-card" style={{ padding: '16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#0f172a' }}>
                 {russianMeta?.title || selectedTable}
               </h3>
-              <span className="badge-soft badge-soft-indigo">
+              <span className="status-pill status-pill-neutral mono-text" style={{ fontSize: 10 }}>
                 {russianMeta?.category || currentTableMeta?.category}
               </span>
             </div>
-            <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
               {russianMeta?.desc || currentTableMeta?.description}
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ position: 'relative', minWidth: 260 }}>
-              <Search size={15} style={{ position: 'absolute', left: 12, top: 12, color: '#94a3b8' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ position: 'relative', minWidth: 240 }}>
+              <Search size={14} style={{ position: 'absolute', left: 10, top: 9, color: '#94a3b8' }} />
               <input
                 type="text"
                 placeholder="Поиск по строкам..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="input-soft"
-                style={{ paddingLeft: 34, width: '100%' }}
+                className="ui-input"
+                style={{ paddingLeft: 30, width: '100%' }}
               />
             </div>
 
             <button
-              className={showDeleted ? 'btn-soft btn-soft-amber' : 'btn-soft btn-soft-secondary'}
+              className="btn-ui btn-ui-secondary"
               onClick={() => setShowDeleted(!showDeleted)}
+              title="Показать или скрыть записи с признаком soft-delete"
             >
-              {showDeleted ? <Eye size={14} /> : <EyeOff size={14} />}
-              {showDeleted ? 'Скрыть мягко удаленные' : 'Показать скрытые'}
+              {showDeleted ? <Eye size={13} /> : <EyeOff size={13} />}
+              {showDeleted ? 'Скрыть удаленные' : 'Показать скрытые'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Records Table */}
-      <div className="soft-card" style={{ overflowX: 'auto', maxHeight: 540 }}>
+      {/* Records Studio Grid */}
+      <div className="studio-card" style={{ overflowX: 'auto', maxHeight: 560, position: 'relative' }}>
         {loading ? (
-          <div style={{ padding: 48, textAlign: 'center', color: '#64748b' }}>
-            Загрузка записей из базы данных...
+          <div style={{ padding: 48, textAlign: 'center', color: '#64748b', fontSize: 13 }}>
+            Чтение данных таблицы...
           </div>
         ) : filteredRows.length === 0 ? (
           <div style={{ padding: 48, textAlign: 'center', color: '#64748b' }}>
-            <AlertCircle size={32} style={{ margin: '0 auto 10px', opacity: 0.4 }} />
-            <p>Записи в таблице {selectedTable} не найдены.</p>
+            <AlertCircle size={28} style={{ margin: '0 auto 8px', color: '#94a3b8' }} />
+            <p style={{ fontSize: 13 }}>Записи в таблице <code>{selectedTable}</code> не найдены.</p>
           </div>
         ) : (
-          <table className="soft-table">
+          <table className="studio-grid">
             <thead>
               <tr>
-                <th style={{ width: 140 }}>ДЕЙСТВИЕ</th>
+                <th style={{ width: 100 }}>ДЕЙСТВИЕ</th>
                 {columns.map(col => (
                   <th key={col}>{col.toUpperCase()}</th>
                 ))}
@@ -165,12 +168,12 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
                   <tr key={idx} style={{ opacity: isSoftDeleted ? 0.45 : 1 }}>
                     <td>
                       <button
-                        className="btn-soft btn-soft-danger"
-                        style={{ padding: '5px 12px', fontSize: 11, width: '100%', borderRadius: 8 }}
+                        className="btn-ui btn-ui-danger"
+                        style={{ padding: '3px 8px', fontSize: 11 }}
                         onClick={() => onOpenCascadeModal(selectedTable, pkVal, String(displayVal))}
                         title="Запустить безопасное каскадное удаление"
                       >
-                        <Trash2 size={12} /> Удалить
+                        <Trash2 size={11} /> Удалить
                       </button>
                     </td>
                     {columns.map(col => {
@@ -185,7 +188,7 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
                         const trStatus = STATUS_TRANSLATIONS[String(val)] || String(val);
                         return (
                           <td key={col}>
-                            <span className={val === 'PAID' ? 'badge-soft badge-soft-emerald' : (val === 'LOCKED_AUDIT' ? 'badge-soft badge-soft-rose' : 'badge-soft badge-soft-amber')}>
+                            <span className={`status-pill ${val === 'PAID' ? 'status-pill-emerald' : (val === 'LOCKED_AUDIT' ? 'status-pill-rose' : 'status-pill-amber')}`}>
                               {trStatus}
                             </span>
                           </td>
@@ -195,15 +198,17 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
                       if (col === 'is_deleted') {
                         return (
                           <td key={col}>
-                            <span className={val === 1 ? 'badge-soft badge-soft-rose' : 'badge-soft badge-soft-emerald'}>
+                            <span className={`status-pill ${val === 1 ? 'status-pill-rose' : 'status-pill-emerald'}`}>
                               {val === 1 ? 'Удалено' : 'Активно'}
                             </span>
                           </td>
                         );
                       }
 
+                      const isMono = typeof val === 'number' || col.endsWith('_id') || col === 'id';
+
                       return (
-                        <td key={col} style={{ fontFamily: typeof val === 'number' || col.endsWith('_id') ? 'var(--font-mono)' : 'inherit' }}>
+                        <td key={col} className={isMono ? 'mono-text' : ''}>
                           <span style={{ color: val === null ? '#94a3b8' : 'inherit' }}>
                             {displayContent}
                           </span>

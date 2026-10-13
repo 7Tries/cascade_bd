@@ -9,16 +9,16 @@ interface SchemaGraphViewProps {
   selectedTable: string | null;
 }
 
-const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string; headerBg: string }> = {
-  'Root Enterprise': { bg: '#ffffff', border: '#c7d2fe', text: '#4f46e5', headerBg: '#eef2ff' },
-  'Division': { bg: '#ffffff', border: '#a7f3d0', text: '#059669', headerBg: '#ecfdf5' },
-  'Personnel': { bg: '#ffffff', border: '#ddd6fe', text: '#7c3aed', headerBg: '#f5f3ff' },
-  'Operation': { bg: '#ffffff', border: '#bae6fd', text: '#0284c7', headerBg: '#f0f9ff' },
-  'Junction': { bg: '#ffffff', border: '#cbd5e1', text: '#475569', headerBg: '#f1f5f9' },
-  'Execution': { bg: '#ffffff', border: '#fecdd3', text: '#e11d48', headerBg: '#fff1f2' },
-  'Telemetry': { bg: '#ffffff', border: '#a5f3fc', text: '#0891b2', headerBg: '#ecfeff' },
-  'Finance': { bg: '#ffffff', border: '#fde68a', text: '#d97706', headerBg: '#fffbeb' },
-  'Evidence': { bg: '#ffffff', border: '#e2e8f0', text: '#64748b', headerBg: '#f8fafc' },
+const CATEGORY_COLORS: Record<string, { border: string; text: string; bg: string }> = {
+  'Root Enterprise': { border: '#cbd5e1', text: '#2563eb', bg: '#eff6ff' },
+  'Division': { border: '#cbd5e1', text: '#059669', bg: '#ecfdf5' },
+  'Personnel': { border: '#cbd5e1', text: '#7c3aed', bg: '#f5f3ff' },
+  'Operation': { border: '#cbd5e1', text: '#0284c7', bg: '#f0f9ff' },
+  'Junction': { border: '#cbd5e1', text: '#475569', bg: '#f1f5f9' },
+  'Execution': { border: '#cbd5e1', text: '#e11d48', bg: '#fff1f2' },
+  'Telemetry': { border: '#cbd5e1', text: '#0891b2', bg: '#ecfeff' },
+  'Finance': { border: '#cbd5e1', text: '#d97706', bg: '#fffbeb' },
+  'Evidence': { border: '#cbd5e1', text: '#64748b', bg: '#f8fafc' },
 };
 
 export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelectTable, selectedTable }) => {
@@ -100,7 +100,7 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
 
-    // Soft warm subtle background grid
+    // Studio grid background
     ctx.fillStyle = '#fafbfc';
     ctx.fillRect(0, 0, width, height);
 
@@ -127,18 +127,14 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
       }
 
       if (isCascadingPath) {
-        ctx.strokeStyle = '#f43f5e';
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = 'rgba(244, 63, 94, 0.3)';
-        ctx.shadowBlur = 6;
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.2;
       } else if (isCyclic) {
-        ctx.strokeStyle = '#a855f7';
-        ctx.lineWidth = 1.6;
-        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#7c3aed';
+        ctx.lineWidth = 1.4;
       } else {
         ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 1.3;
-        ctx.shadowBlur = 0;
+        ctx.lineWidth = 1.2;
       }
 
       const cpY = (p1.y + p2.y) / 2;
@@ -146,16 +142,16 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
       ctx.bezierCurveTo(p1.x, cpY, p2.x, cpY, p2.x, p2.y - 25);
       ctx.stroke();
 
-      // Arrow
+      // Sharp directional arrow
       const arrowX = p2.x;
       const arrowY = p2.y - 25;
       ctx.save();
       ctx.translate(arrowX, arrowY);
-      ctx.fillStyle = isCascadingPath ? '#f43f5e' : (isCyclic ? '#a855f7' : '#94a3b8');
+      ctx.fillStyle = isCascadingPath ? '#dc2626' : (isCyclic ? '#7c3aed' : '#94a3b8');
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.lineTo(-4, -8);
-      ctx.lineTo(4, -8);
+      ctx.lineTo(-4, -7);
+      ctx.lineTo(4, -7);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
@@ -164,8 +160,8 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
         const midX = (p1.x + p2.x) / 2;
         const midY = (p1.y + p2.y) / 2;
         ctx.save();
-        ctx.fillStyle = edge.onDelete === 'RESTRICT' ? '#d97706' : (edge.onDelete === 'SET NULL' ? '#0284c7' : '#64748b');
-        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillStyle = edge.onDelete === 'RESTRICT' ? '#d97706' : (edge.onDelete === 'SET NULL' ? '#0284c7' : '#475569');
+        ctx.font = '500 10px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText(`${edge.onDelete}`, midX, midY - 4);
         ctx.restore();
@@ -173,9 +169,8 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
     });
 
     ctx.setLineDash([]);
-    ctx.shadowBlur = 0;
 
-    // Draw Nodes (Soft Rounded Cards)
+    // Draw Nodes (Studio Cards)
     graph.nodes.forEach(node => {
       const pos = nodePositions[node.id];
       if (!pos) return;
@@ -186,44 +181,46 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
       const catColors = CATEGORY_COLORS[node.category] || CATEGORY_COLORS['Evidence'];
 
       const nodeW = 196;
-      const nodeH = 56;
+      const nodeH = 54;
       const rx = pos.x - nodeW / 2;
       const ry = pos.y - nodeH / 2;
 
       ctx.save();
 
-      // Card shadow
-      if (isSelected || isHovered) {
-        ctx.shadowColor = 'rgba(99, 102, 241, 0.25)';
-        ctx.shadowBlur = 12;
-      } else if (isDescendant) {
-        ctx.shadowColor = 'rgba(244, 63, 94, 0.25)';
-        ctx.shadowBlur = 10;
+      // Card Fill & Stroke
+      if (isDescendant) {
+        ctx.fillStyle = '#fef2f2';
+        ctx.strokeStyle = '#f87171';
+        ctx.lineWidth = 1.5;
+      } else if (isSelected) {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+      } else if (isHovered) {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1.5;
       } else {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.04)';
-        ctx.shadowBlur = 6;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
       }
 
-      ctx.fillStyle = isDescendant ? '#fff1f2' : (isSelected ? '#eef2ff' : '#ffffff');
-      ctx.strokeStyle = isDescendant ? '#f43f5e' : (isSelected ? '#6366f1' : catColors.border);
-      ctx.lineWidth = isSelected || isDescendant ? 2 : 1.2;
-
       ctx.beginPath();
-      ctx.roundRect(rx, ry, nodeW, nodeH, 10);
+      ctx.roundRect(rx, ry, nodeW, nodeH, 8);
       ctx.fill();
       ctx.stroke();
-      ctx.shadowBlur = 0;
 
-      // Category top badge
+      // Category Pill
       const russianCategory = TABLE_TRANSLATIONS[node.id]?.category || node.category;
-      ctx.fillStyle = isDescendant ? '#e11d48' : catColors.text;
-      ctx.font = '600 9px Plus Jakarta Sans, sans-serif';
-      ctx.fillText(russianCategory.toUpperCase(), rx + 12, ry + 17);
+      ctx.fillStyle = isDescendant ? '#dc2626' : catColors.text;
+      ctx.font = '600 9px Inter, -apple-system, sans-serif';
+      ctx.fillText(russianCategory.toUpperCase(), rx + 12, ry + 16);
 
       // Table Name
-      ctx.fillStyle = isDescendant ? '#9f1239' : (isSelected ? '#3730a3' : '#1e293b');
-      ctx.font = 'bold 13px Plus Jakarta Sans, sans-serif';
-      ctx.fillText(node.label, rx + 12, ry + 38);
+      ctx.fillStyle = isDescendant ? '#991b1b' : (isSelected ? '#0f172a' : '#1e293b');
+      ctx.font = '600 13px Inter, -apple-system, sans-serif';
+      ctx.fillText(node.label, rx + 12, ry + 36);
 
       ctx.restore();
     });
@@ -254,8 +251,8 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
         if (
           mouseX >= pos.x - 98 &&
           mouseX <= pos.x + 98 &&
-          mouseY >= pos.y - 28 &&
-          mouseY <= pos.y + 28
+          mouseY >= pos.y - 27 &&
+          mouseY <= pos.y + 27
         ) {
           found = node.id;
           break;
@@ -283,39 +280,37 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
   const selectedMeta = selectedTable ? TABLE_TRANSLATIONS[selectedTable] : null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Top Banner & Controls */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Header Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, color: '#1e293b' }}>
-            <Database size={20} color="#6366f1" /> Интерактивная карта зависимостей (DAG)
+          <h2 style={{ fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, color: '#0f172a' }}>
+            <Database size={16} color="#0f172a" /> Карта связей реляционной схемы (DAG)
           </h2>
-          <p style={{ fontSize: 13, color: '#64748b' }}>
-            Наведите курсор на таблицу, чтобы подсветить цепочку каскадного удаления, или кликните для перехода к её данным.
+          <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+            Наведите курсор на таблицу для симуляции пути каскада. Кликните для фильтрации данных таблицы.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="btn-soft btn-soft-secondary" onClick={() => setScale(s => Math.min(s + 0.15, 2))}>
-            <ZoomIn size={14} /> Приблизить
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <button className="btn-ui btn-ui-secondary" onClick={() => setScale(s => Math.min(s + 0.15, 2))}>
+            <ZoomIn size={13} /> Увеличить
           </button>
-          <button className="btn-soft btn-soft-secondary" onClick={() => setScale(s => Math.max(s - 0.15, 0.5))}>
-            <ZoomOut size={14} /> Отдалить
+          <button className="btn-ui btn-ui-secondary" onClick={() => setScale(s => Math.max(s - 0.15, 0.5))}>
+            <ZoomOut size={13} /> Уменьшить
           </button>
-          <button className="btn-soft btn-soft-secondary" onClick={() => { setScale(1); setOffset({ x: 30, y: 25 }); }}>
-            <Maximize2 size={14} /> Сбросить вид
+          <button className="btn-ui btn-ui-secondary" onClick={() => { setScale(1); setOffset({ x: 30, y: 25 }); }}>
+            <Maximize2 size={13} /> Сбросить вид
           </button>
         </div>
       </div>
 
-      {/* Canvas Area */}
+      {/* Canvas Card */}
       <div
-        className="soft-card"
+        className="studio-card"
         style={{
           position: 'relative',
           overflow: 'hidden',
-          borderRadius: 16,
-          background: '#fafbfc',
           cursor: isDragging ? 'grabbing' : (hoveredNode ? 'pointer' : 'grab')
         }}
       >
@@ -332,82 +327,82 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
         <div
           style={{
             position: 'absolute',
-            bottom: 16,
-            left: 16,
-            background: 'rgba(255, 255, 255, 0.95)',
+            bottom: 14,
+            left: 14,
+            background: 'rgba(255, 255, 255, 0.94)',
             backdropFilter: 'blur(8px)',
-            border: '1px solid #e2e8f0',
-            padding: '12px 16px',
-            borderRadius: 12,
-            boxShadow: 'var(--shadow-sm)',
-            fontSize: 12,
+            border: '1px solid var(--border-light)',
+            padding: '10px 14px',
+            borderRadius: 8,
+            boxShadow: 'var(--shadow-xs)',
+            fontSize: 11,
             display: 'flex',
             flexDirection: 'column',
-            gap: 6
+            gap: 5
           }}
         >
-          <div style={{ fontWeight: 700, fontSize: 11, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Подсказка по связям
+          <div style={{ fontWeight: 600, fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Легенда связей схемы
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 14, height: 3, borderRadius: 2, background: '#f43f5e', display: 'inline-block' }} />
+            <span style={{ width: 14, height: 2, background: '#dc2626', display: 'inline-block' }} />
             <span style={{ color: '#334155' }}>Цепочка каскада (затронутые таблицы)</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 14, height: 2, borderBottom: '2px dashed #a855f7', display: 'inline-block' }} />
-            <span style={{ color: '#334155' }}>Циклическая связь (безопасное расцепление)</span>
+            <span style={{ width: 14, height: 2, borderBottom: '2px dashed #7c3aed', display: 'inline-block' }} />
+            <span style={{ color: '#334155' }}>Циклическая связь (авто-расцепление)</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 2, background: '#d97706', display: 'inline-block' }} />
-            <span style={{ color: '#334155' }}>Защита RESTRICT (оплаченные инвойсы)</span>
+            <span style={{ width: 6, height: 6, borderRadius: 2, background: '#d97706', display: 'inline-block' }} />
+            <span style={{ color: '#334155' }}>Ограничение RESTRICT (бизнес-правило)</span>
           </div>
         </div>
 
         {/* Selected Table Inspector Card */}
         {selectedTable && (
           <div
-            className="animate-soft-in"
+            className="studio-card animate-enter"
             style={{
               position: 'absolute',
-              top: 16,
-              right: 16,
-              width: 320,
-              background: 'rgba(255, 255, 255, 0.98)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid #c7d2fe',
-              padding: 18,
-              borderRadius: 14,
+              top: 14,
+              right: 14,
+              width: 310,
+              padding: 16,
+              background: 'rgba(255, 255, 255, 0.96)',
+              backdropFilter: 'blur(8px)',
               boxShadow: 'var(--shadow-card-hover)'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span className="badge-soft badge-soft-indigo">Выбранная таблица</span>
+              <span className="status-pill status-pill-neutral mono-text" style={{ fontSize: 10 }}>
+                {selectedMeta?.category || 'TABLE'}
+              </span>
               <button
-                className="btn-soft btn-soft-secondary"
-                style={{ padding: '2px 8px', fontSize: 11, borderRadius: 6 }}
+                className="btn-ui btn-ui-ghost"
+                style={{ padding: '2px 6px', fontSize: 12 }}
                 onClick={() => onSelectTable('')}
               >
                 ✕
               </button>
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: '#0f172a' }}>
               {selectedTable}
             </div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4, marginBottom: 12, lineHeight: 1.4 }}>
               {selectedMeta?.desc || graph.nodes.find(n => n.id === selectedTable)?.description}
             </div>
 
             <div style={{ fontSize: 12, marginBottom: 8, color: '#475569' }}>
               <span>Зависимых таблиц: </span>
-              <strong style={{ color: cascadeDescendants.size > 0 ? '#e11d48' : '#059669' }}>
+              <strong style={{ color: cascadeDescendants.size > 0 ? '#dc2626' : '#059669' }}>
                 {cascadeDescendants.size}
               </strong>
             </div>
 
             {cascadeDescendants.size > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 16 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 14 }}>
                 {Array.from(cascadeDescendants).map(d => (
-                  <span key={d} className="badge-soft badge-soft-rose" style={{ fontSize: 10 }}>
+                  <span key={d} className="status-pill status-pill-rose mono-text" style={{ fontSize: 10 }}>
                     {d}
                   </span>
                 ))}
@@ -415,11 +410,11 @@ export const SchemaGraphView: React.FC<SchemaGraphViewProps> = ({ graph, onSelec
             )}
 
             <button
-              className="btn-soft btn-soft-primary"
+              className="btn-ui btn-ui-primary"
               style={{ width: '100%', fontSize: 12 }}
               onClick={() => onSelectTable(selectedTable)}
             >
-              Открыть строки таблицы <ArrowRight size={14} />
+              Перейти к строкам таблицы <ArrowRight size={13} />
             </button>
           </div>
         )}
