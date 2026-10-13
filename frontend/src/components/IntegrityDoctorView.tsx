@@ -78,39 +78,39 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
   const isHealthy = audit?.score === 100;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Top Banner */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-headline)' }}>
-            <Activity size={20} color={isHealthy ? '#00e676' : '#ff3344'} />
-            ДОКТОР ЦЕЛОСТНОСТИ БАЗЫ ДАННЫХ
+          <h2 style={{ fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, color: '#1e293b' }}>
+            <Activity size={20} color={isHealthy ? '#059669' : '#e11d48'} />
+            Доктор целостности базы данных
           </h2>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            Непрерывный физический аудит страниц B-Tree, внешних ключей ядра SQLite и бизнес-инвариантов.
+          <p style={{ fontSize: 13, color: '#64748b' }}>
+            Автоматическая проверка физического хранилища страниц SQLite, ссылок внешних ключей и бизнес-инвариантов.
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="pill-btn pill-btn-white" onClick={runAudit} disabled={loading}>
-            <RefreshCw className={loading ? 'animate-spin' : ''} size={13} /> ПОВТОРНЫЙ АУДИТ
+          <button className="btn-soft btn-soft-secondary" onClick={runAudit} disabled={loading}>
+            <RefreshCw className={loading ? 'animate-spin' : ''} size={13} /> Повторный аудит
           </button>
-          <button className="pill-btn pill-btn-yellow" onClick={handleResetSeed} disabled={loading}>
-            <RotateCcw size={13} /> СБРОСИТЬ И НАПОЛНИТЬ
+          <button className="btn-soft btn-soft-amber" onClick={handleResetSeed} disabled={loading}>
+            <RotateCcw size={13} /> Сбросить и наполнить
           </button>
         </div>
       </div>
 
       {actionMessage && (
         <div
-          className="animate-fade-in"
+          className="animate-soft-in"
           style={{
             padding: '14px 18px',
-            background: 'rgba(255, 208, 0, 0.08)',
-            border: '1px solid #ffd000',
-            borderRadius: 4,
+            background: '#fffbeb',
+            border: '1px solid #fde68a',
+            borderRadius: 12,
             fontSize: 13,
-            color: '#ffd000'
+            color: '#b45309'
           }}
         >
           {actionMessage}
@@ -122,25 +122,24 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
           {/* Integrity Score */}
           <div
-            className="editorial-card"
+            className="soft-card"
             style={{
               padding: 22,
-              borderTop: `3px solid ${isHealthy ? '#00e676' : '#ff3344'}`,
+              borderTop: `4px solid ${isHealthy ? '#10b981' : '#f43f5e'}`,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between'
             }}
           >
             <div>
-              <div className="mono-tag" style={{ color: 'var(--text-muted)' }}>
-                ИНДЕКС ЗДОРОВЬЯ БАЗЫ
+              <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+                Индекс здоровья базы
               </div>
               <div
                 style={{
-                  fontSize: 44,
+                  fontSize: 38,
                   fontWeight: 800,
-                  fontFamily: 'var(--font-mono)',
-                  color: isHealthy ? '#00e676' : '#ff3344',
+                  color: isHealthy ? '#059669' : '#e11d48',
                   marginTop: 6
                 }}
               >
@@ -148,56 +147,56 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
               </div>
             </div>
             <div style={{ marginTop: 14 }}>
-              <span className={isHealthy ? 'badge-tag badge-tag-green' : 'badge-tag badge-tag-red'}>
-                {isHealthy ? 'БЕЗУПРЕЧНО' : 'ОБНАРУЖЕНЫ АНОМАЛИИ'} ({audit.totalIssues} проблем)
+              <span className={isHealthy ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-rose'}>
+                {isHealthy ? 'Безупречно' : 'Обнаружены аномалии'} ({audit.totalIssues} проблем)
               </span>
             </div>
           </div>
 
           {/* Physical Storage */}
-          <div className="editorial-card" style={{ padding: 22, borderTop: '3px solid #ffffff' }}>
-            <div className="mono-tag" style={{ color: 'var(--text-muted)' }}>
-              ФИЗИЧЕСКОЕ ХРАНИЛИЩЕ B-TREE
+          <div className="soft-card" style={{ padding: 22, borderTop: '4px solid #6366f1' }}>
+            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+              Физическое хранилище B-Tree
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Server size={18} color="#ffffff" />
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Server size={18} color="#6366f1" />
               PRAGMA integrity_check
             </div>
             <div style={{ marginTop: 18 }}>
-              <span className={audit.physicalStatus === 'OK' ? 'badge-tag badge-tag-green' : 'badge-tag badge-tag-red'}>
-                СТАТУС СТРАНИЦ: {audit.physicalStatus}
+              <span className={audit.physicalStatus === 'OK' ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-rose'}>
+                Страницы: {audit.physicalStatus}
               </span>
             </div>
           </div>
 
           {/* Referential Integrity */}
-          <div className="editorial-card" style={{ padding: 22, borderTop: '3px solid #00e676' }}>
-            <div className="mono-tag" style={{ color: 'var(--text-muted)' }}>
-              ССЫЛОЧНАЯ ЦЕЛОСТНОСТЬ ВНЕШНИХ КЛЮЧЕЙ
+          <div className="soft-card" style={{ padding: 22, borderTop: '4px solid #059669' }}>
+            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+              Целостность внешних ключей
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ShieldCheck size={18} color="#00e676" />
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <ShieldCheck size={18} color="#059669" />
               PRAGMA foreign_key_check
             </div>
             <div style={{ marginTop: 18 }}>
-              <span className={audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? 'badge-tag badge-tag-green' : 'badge-tag badge-tag-red'}>
-                {audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? '0 ПОВРЕЖДЕННЫХ СВЯЗЕЙ' : `${audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length} СЛОМАННЫХ FK`}
+              <span className={audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-rose'}>
+                {audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length === 0 ? '0 сломанных связей' : `${audit.issues.filter(i => i.type === 'ORPHANED_FOREIGN_KEY').length} сломанных FK`}
               </span>
             </div>
           </div>
 
           {/* Invariants */}
-          <div className="editorial-card" style={{ padding: 22, borderTop: '3px solid #ffd000' }}>
-            <div className="mono-tag" style={{ color: 'var(--text-muted)' }}>
-              ИНВАРИАНТЫ БИЗНЕС-ЛОГИКИ
+          <div className="soft-card" style={{ padding: 22, borderTop: '4px solid #f59e0b' }}>
+            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+              Инварианты бизнес-логики
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Database size={18} color="#ffd000" />
-              Полиморфные и логические связи
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Database size={18} color="#d97706" />
+              Полиморфные связи
             </div>
             <div style={{ marginTop: 18 }}>
-              <span className={audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? 'badge-tag badge-tag-green' : 'badge-tag badge-tag-yellow'}>
-                {audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? '100% ИНВАРИАНТОВ В НОРМЕ' : `${audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length} НАРУШЕНИЙ`}
+              <span className={audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? 'badge-soft badge-soft-emerald' : 'badge-soft badge-soft-amber'}>
+                {audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length === 0 ? '100% инвариантов в норме' : `${audit.issues.filter(i => i.type !== 'ORPHANED_FOREIGN_KEY').length} предупреждений`}
               </span>
             </div>
           </div>
@@ -205,37 +204,37 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
       )}
 
       {/* Chaos Simulator & Auto-Repair */}
-      <div className="editorial-card" style={{ padding: 24 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: '#ffffff', fontFamily: 'var(--font-headline)' }}>
-          ЛАБОРАТОРИЯ ТЕСТИРОВАНИЯ ХАОСА И АВТО-РЕМОНТ
+      <div className="soft-card" style={{ padding: 24, background: 'linear-gradient(135deg, #ffffff 0%, #fffbeb 100%)', border: '1px solid #fde68a' }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: '#1e293b' }}>
+          Тестирование устойчивости (Chaos Test)
         </h3>
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 18 }}>
-          Намеренно внедрите поврежденную сиротскую запись в обход ограничений базы, чтобы наглядно убедиться в работе детектора Доктора Целостности и механизма автоматического исправления.
+        <p style={{ fontSize: 13, color: '#64748b', marginBottom: 18, maxWidth: 800 }}>
+          Вы можете намеренно внести сломанную запись в базу, чтобы проверить, как Доктор Целостности её мгновенно обнаружит, и затем нажать кнопку авто-исправления.
         </p>
 
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-          <button className="pill-btn pill-btn-danger" onClick={handleInjectChaos} disabled={loading}>
-            <Bug size={14} /> ТЕСТ ХАОСА: ВНЕДРИТЬ СИРОТСКУЮ ЗАПИСЬ
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <button className="btn-soft btn-soft-danger" onClick={handleInjectChaos} disabled={loading}>
+            <Bug size={15} /> Внести сломанную запись (Тест)
           </button>
 
-          <button className="pill-btn pill-btn-success" onClick={handleRepair} disabled={loading || isHealthy}>
-            <Wrench size={14} /> АВТО-РЕМОНТ И ОЧИСТКА БАЗЫ
+          <button className="btn-soft btn-soft-success" onClick={handleRepair} disabled={loading || isHealthy}>
+            <Wrench size={15} /> Автоматически исправить базу
           </button>
         </div>
       </div>
 
       {/* Issues List */}
-      <div className="editorial-card" style={{ padding: 24 }}>
-        <h3 className="mono-tag" style={{ fontSize: 12, marginBottom: 14, color: '#ffffff' }}>
-          ОТЧЕТ ДИАГНОСТИКИ СУБД ({audit?.issues.length || 0} АНОМАЛИЙ)
+      <div className="soft-card" style={{ padding: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: '#1e293b' }}>
+          Отчет диагностики базы ({audit?.issues.length || 0} аномалий)
         </h3>
 
         {audit?.issues.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: '#00e676' }}>
-            <CheckCircle size={36} style={{ margin: '0 auto 10px' }} />
-            <p style={{ fontWeight: 700, fontSize: 16 }}>Целостность базы данных идеальна</p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-              Физическое хранилище целостно, все внешние ключи соблюдены, бизнес-инварианты выполняются на 100%.
+          <div style={{ padding: 32, textAlign: 'center', color: '#059669' }}>
+            <CheckCircle size={36} style={{ margin: '0 auto 10px', color: '#10b981' }} />
+            <p style={{ fontWeight: 700, fontSize: 16, color: '#1e293b' }}>База данных полностью здорова</p>
+            <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+              Все внешние ключи соблюдены, висячих записей нет, физическое хранилище целостно.
             </p>
           </div>
         ) : (
@@ -245,9 +244,9 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
                 key={idx}
                 style={{
                   padding: '14px 18px',
-                  background: '#040404',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 4,
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 10,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -255,13 +254,13 @@ export const IntegrityDoctorView: React.FC<IntegrityDoctorViewProps> = ({ onData
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span className={issue.severity === 'CRITICAL' ? 'badge-tag badge-tag-red' : (issue.severity === 'HIGH' ? 'badge-tag badge-tag-yellow' : 'badge-tag')}>
+                  <span className={issue.severity === 'CRITICAL' ? 'badge-soft badge-soft-rose' : (issue.severity === 'HIGH' ? 'badge-soft badge-soft-amber' : 'badge-soft badge-soft-slate')}>
                     {issue.type}
                   </span>
-                  <span style={{ fontSize: 13, color: '#ffffff' }}>{issue.detail}</span>
+                  <span style={{ fontSize: 13, color: '#1e293b' }}>{issue.detail}</span>
                 </div>
 
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#94a3b8' }}>
                   {issue.table} {issue.rowId ? `#${issue.rowId}` : ''}
                 </span>
               </div>

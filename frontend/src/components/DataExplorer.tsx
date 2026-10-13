@@ -66,23 +66,24 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
             <button
               key={tbl.name}
               onClick={() => onSelectTable(tbl.name)}
-              className={isSelected ? 'pill-btn pill-btn-filled-white' : 'pill-btn pill-btn-white'}
+              className={isSelected ? 'btn-soft btn-soft-primary' : 'btn-soft btn-soft-secondary'}
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 whiteSpace: 'nowrap',
-                padding: '7px 14px'
+                padding: '8px 14px',
+                borderRadius: 12
               }}
             >
-              <Table size={13} />
+              <Table size={14} />
               <span>{tr ? tr.title.split(' ')[0] : tbl.name}</span>
               <span
                 style={{
-                  background: isSelected ? '#000000' : 'rgba(255, 255, 255, 0.15)',
-                  color: isSelected ? '#ffffff' : 'inherit',
-                  padding: '1px 6px',
+                  background: isSelected ? 'rgba(255, 255, 255, 0.25)' : '#f1f5f9',
+                  color: isSelected ? '#ffffff' : '#64748b',
+                  padding: '2px 7px',
                   borderRadius: 9999,
-                  fontSize: 10,
-                  fontFamily: 'var(--font-mono)'
+                  fontSize: 11,
+                  fontWeight: 700
                 }}
               >
                 {tbl.activeCount}
@@ -93,59 +94,59 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
       </div>
 
       {/* Table Header & Search Filter */}
-      <div className="editorial-card" style={{ padding: '20px 24px' }}>
+      <div className="soft-card" style={{ padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                {selectedTable}
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b' }}>
+                {russianMeta?.title || selectedTable}
               </h3>
-              <span className="badge-tag badge-tag-yellow">
+              <span className="badge-soft badge-soft-indigo">
                 {russianMeta?.category || currentTableMeta?.category}
               </span>
             </div>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
+            <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
               {russianMeta?.desc || currentTableMeta?.description}
             </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ position: 'relative', minWidth: 260 }}>
-              <Search size={14} style={{ position: 'absolute', left: 12, top: 11, color: 'var(--text-muted)' }} />
+              <Search size={15} style={{ position: 'absolute', left: 12, top: 12, color: '#94a3b8' }} />
               <input
                 type="text"
                 placeholder="Поиск по строкам..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="input-editorial"
+                className="input-soft"
                 style={{ paddingLeft: 34, width: '100%' }}
               />
             </div>
 
             <button
-              className={showDeleted ? 'pill-btn pill-btn-yellow' : 'pill-btn pill-btn-white'}
+              className={showDeleted ? 'btn-soft btn-soft-amber' : 'btn-soft btn-soft-secondary'}
               onClick={() => setShowDeleted(!showDeleted)}
             >
-              {showDeleted ? <Eye size={13} /> : <EyeOff size={13} />}
-              {showDeleted ? 'МЯГКО УДАЛЕННЫЕ: ВКЛ' : 'ПОКАЗАТЬ УДАЛЕННЫЕ'}
+              {showDeleted ? <Eye size={14} /> : <EyeOff size={14} />}
+              {showDeleted ? 'Скрыть мягко удаленные' : 'Показать скрытые'}
             </button>
           </div>
         </div>
       </div>
 
       {/* Records Table */}
-      <div className="editorial-card" style={{ overflowX: 'auto', maxHeight: 540 }}>
+      <div className="soft-card" style={{ overflowX: 'auto', maxHeight: 540 }}>
         {loading ? (
-          <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <div style={{ padding: 48, textAlign: 'center', color: '#64748b' }}>
             Загрузка записей из базы данных...
           </div>
         ) : filteredRows.length === 0 ? (
-          <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <div style={{ padding: 48, textAlign: 'center', color: '#64748b' }}>
             <AlertCircle size={32} style={{ margin: '0 auto 10px', opacity: 0.4 }} />
             <p>Записи в таблице {selectedTable} не найдены.</p>
           </div>
         ) : (
-          <table className="editorial-table">
+          <table className="soft-table">
             <thead>
               <tr>
                 <th style={{ width: 140 }}>ДЕЙСТВИЕ</th>
@@ -164,12 +165,12 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
                   <tr key={idx} style={{ opacity: isSoftDeleted ? 0.45 : 1 }}>
                     <td>
                       <button
-                        className="pill-btn pill-btn-danger"
-                        style={{ padding: '3px 10px', fontSize: 10, width: '100%' }}
+                        className="btn-soft btn-soft-danger"
+                        style={{ padding: '5px 12px', fontSize: 11, width: '100%', borderRadius: 8 }}
                         onClick={() => onOpenCascadeModal(selectedTable, pkVal, String(displayVal))}
-                        title="Запустить каскадное удаление"
+                        title="Запустить безопасное каскадное удаление"
                       >
-                        <Trash2 size={11} /> КАСКАД
+                        <Trash2 size={12} /> Удалить
                       </button>
                     </td>
                     {columns.map(col => {
@@ -177,14 +178,14 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
                       let displayContent = String(val);
 
                       if (val === null || val === undefined) {
-                        displayContent = 'NULL';
+                        displayContent = '—';
                       }
 
                       if (col === 'status') {
                         const trStatus = STATUS_TRANSLATIONS[String(val)] || String(val);
                         return (
                           <td key={col}>
-                            <span className={val === 'PAID' ? 'badge-tag badge-tag-green' : (val === 'LOCKED_AUDIT' ? 'badge-tag badge-tag-red' : 'badge-tag badge-tag-yellow')}>
+                            <span className={val === 'PAID' ? 'badge-soft badge-soft-emerald' : (val === 'LOCKED_AUDIT' ? 'badge-soft badge-soft-rose' : 'badge-soft badge-soft-amber')}>
                               {trStatus}
                             </span>
                           </td>
@@ -194,8 +195,8 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
                       if (col === 'is_deleted') {
                         return (
                           <td key={col}>
-                            <span className={val === 1 ? 'badge-tag badge-tag-red' : 'badge-tag badge-tag-green'}>
-                              {val === 1 ? 'УДАЛЕНО' : 'АКТИВНО'}
+                            <span className={val === 1 ? 'badge-soft badge-soft-rose' : 'badge-soft badge-soft-emerald'}>
+                              {val === 1 ? 'Удалено' : 'Активно'}
                             </span>
                           </td>
                         );
@@ -203,7 +204,7 @@ export const DataExplorer: React.FC<DataExplorerProps> = ({
 
                       return (
                         <td key={col} style={{ fontFamily: typeof val === 'number' || col.endsWith('_id') ? 'var(--font-mono)' : 'inherit' }}>
-                          <span style={{ color: val === null ? 'var(--text-muted)' : 'inherit' }}>
+                          <span style={{ color: val === null ? '#94a3b8' : 'inherit' }}>
                             {displayContent}
                           </span>
                         </td>
