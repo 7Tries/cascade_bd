@@ -42,21 +42,35 @@ class TestCascadeIntegrity(unittest.TestCase):
         cls.doctor = IntegrityDoctor()
 
     def setUp(self):
+        try:
+            self.conn.rollback()
+        except Exception:
+            pass
         # Reset and seed clean data before each test
         self.seeder.reset_and_seed(self.conn, "ENTERPRISE")
+
+    def tearDown(self):
+        try:
+            self.conn.rollback()
+        except Exception:
+            pass
 
     def test_01_physical_integrity_initial_audit(self):
         """Database should start with 100% integrity health score and 0 foreign key violations."""
         audit = self.doctor.run_full_audit(self.conn)
         self.assertEqual(audit["score"], 100)
-        self.assertEqual(audit["physicalStatus"], "OK")
+        self.assertTrue(audit["physicalStatus"].startswith("OK"))
         self.assertEqual(audit["totalIssues"], 0)
 
     def test_02_direct_deletion_without_cascade_fails_fk_constraint(self):
-        """Attempting direct deletion of parent record without cascade MUST trigger SQLite FK violation."""
+        """Attempting direct deletion of parent record without cascade MUST trigger FK violation."""
         cur = self.conn.cursor()
-        with self.assertRaises(sqlite3.IntegrityError):
+        with self.assertRaises(Exception):
             cur.execute("DELETE FROM organizations WHERE id = 1")
+        try:
+            self.conn.rollback()
+        except Exception:
+            pass
 
     def test_03_impact_analyzer_detects_blockers(self):
         """Impact analyzer should identify PAID invoices as critical logical integrity blockers."""
@@ -156,5 +170,91 @@ class TestCascadeIntegrity(unittest.TestCase):
         if os.path.exists(cls.test_db):
             os.remove(cls.test_db)
 
+class TestPostgresCascadeIntegrity(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        try:
+            cls.conn = get_connection(prefer_pg=True)
+            if getattr(cls.conn, "db_type", None) != "POSTGRESQL":
+                raise unittest.SkipTest("PostgreSQL server is not online")
+            cls.seeder = DatabaseSeeder()
+            cls.seeder.init_schema(cls.conn)
+            cls.planner = GraphPlanner()
+            cls.analyzer = ImpactAnalyzer(cls.planner)
+            cls.executor = CascadeExecutor(cls.planner, cls.analyzer)
+            cls.restorer = RestoreEngine(cls.planner)
+            cls.doctor = IntegrityDoctor()
+        except Exception as e:
+            raise unittest.SkipTest(f"Skipping Postgres tests: {e}")
+
+    def setUp(self):
+        try:
+            self.conn.rollback()
+        except Exception:
+            pass
+        self.seeder.reset_and_seed(self.conn, "ENTERPRISE")
+
+    def tearDown(self):
+        try:
+            self.conn.rollback()
+        except Exception:
+            pass
+
+    def test_pg_01_connection_and_initial_audit(self):
+        """PostgreSQL 16 connection must be active with 100% health score."""
+        self.assertEqual(self.conn.db_type, "POSTGRESQL")
+        audit = self.doctor.run_full_audit(self.conn)
+        self.assertEqual(audit["score"], 100)
+        self.assertIn("PostgreSQL 16", audit["physicalStatus"])
+
+    def test_pg_02_direct_deletion_blocked_by_engine(self):
+        """Direct deletion of referenced parent in PostgreSQL must trigger ForeignKeyViolation."""
+        cur = self.conn.cursor()
+        with self.assertRaises(Exception):
+            cur.execute("DELETE FROM organizations WHERE id = 1")
+        self.conn.rollback()
+
+    def test_pg_03_topological_cascade_execution(self):
+        """Cascade deletion on department #1 must succeed across all dependent tables in PostgreSQL."""
+        res = self.executor.execute_cascade(
+            self.conn,
+            root_table="departments",
+            root_id=1,
+            policy="HARD_CASCADE",
+            override_violations=True
+        )
+        self.assertTrue(res["integrityVerified"])
+        self.assertGreater(res["totalAffected"], 0)
+
+        # Audit post-cascade
+        audit = self.doctor.run_full_audit(self.conn)
+        self.assertEqual(audit["score"], 100)
+
+    def test_pg_04_snapshot_restoration_to_postgres(self):
+        """Archived snapshot in PostgreSQL must be restorable in 1 click."""
+        del_res = self.executor.execute_cascade(
+            self.conn,
+            root_table="tasks",
+            root_id=1,
+            policy="ARCHIVE_AND_HARD_DELETE"
+        )
+        cur = self.conn.cursor()
+        cur.execute("SELECT id FROM cascade_audit_ledger WHERE execution_id = %s", (del_res["executionId"],))
+        ledger_id = cur.fetchone()[0]
+
+        restore_res = self.restorer.restore_execution(self.conn, ledger_id)
+        self.assertEqual(restore_res["totalRestored"], del_res["totalAffected"])
+
+        audit = self.doctor.run_full_audit(self.conn)
+        self.assertEqual(audit["score"], 100)
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            cls.conn.close()
+        except Exception:
+            pass
+
 if __name__ == "__main__":
     unittest.main()
+

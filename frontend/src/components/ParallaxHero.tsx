@@ -1,18 +1,23 @@
 import React from 'react';
+import type { DbInfo } from '../api';
 import { Zap, GitGraph, RotateCcw, CheckCircle2, ShieldCheck, Database, Layers } from 'lucide-react';
 
 interface ParallaxHeroProps {
   onOpenSimulator: () => void;
   onExploreGraph: () => void;
+  onOpenDbModal?: () => void;
   healthScore: number;
   totalTables: number;
+  dbInfo?: DbInfo | null;
 }
 
 export const ParallaxHero: React.FC<ParallaxHeroProps> = ({
   onOpenSimulator,
   onExploreGraph,
+  onOpenDbModal,
   healthScore,
-  totalTables
+  totalTables,
+  dbInfo
 }) => {
   return (
     <section
@@ -55,6 +60,15 @@ export const ParallaxHero: React.FC<ParallaxHeroProps> = ({
 
           {/* Quick Utility Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {onOpenDbModal && (
+              <button
+                className="btn-ui btn-ui-secondary"
+                onClick={onOpenDbModal}
+                title="Параметры подключения и инструкция для DBeaver"
+              >
+                <Database size={14} color="#0284c7" /> DBeaver (Postgres)
+              </button>
+            )}
             <button className="btn-ui btn-ui-secondary" onClick={onExploreGraph}>
               <GitGraph size={14} color="#475569" /> Карта связей
             </button>
@@ -90,11 +104,30 @@ export const ParallaxHero: React.FC<ParallaxHeroProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-            <Database size={18} color="#7c3aed" />
+          <div
+            onClick={onOpenDbModal}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '8px 12px',
+              background: '#f8fafc',
+              borderRadius: 8,
+              border: '1px solid #e2e8f0',
+              cursor: onOpenDbModal ? 'pointer' : 'default',
+              transition: 'border-color 0.15s ease'
+            }}
+            title={onOpenDbModal ? 'Открыть параметры DBeaver' : undefined}
+          >
+            <Database size={18} color="#0284c7" />
             <div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Режим транзакций</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>SQLite WAL (ACID)</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>База данных (СУБД)</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>{dbInfo?.engine || 'PostgreSQL 16'}</span>
+                <span className="status-pill status-pill-sky" style={{ fontSize: 10, padding: '1px 6px' }}>
+                  {dbInfo?.isPostgres ? 'DBeaver' : 'WAL'}
+                </span>
+              </div>
             </div>
           </div>
 

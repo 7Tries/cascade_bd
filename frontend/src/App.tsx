@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { SchemaGraph, TableInfo, IntegrityAudit } from './api';
+import type { SchemaGraph, TableInfo, IntegrityAudit, DbInfo } from './api';
 import { api } from './api';
 import { ParallaxHero } from './components/ParallaxHero';
 import { IntuitiveGuide } from './components/IntuitiveGuide';
@@ -8,6 +8,7 @@ import { DataExplorer } from './components/DataExplorer';
 import { CascadeStudio } from './components/CascadeStudio';
 import { AuditLedger } from './components/AuditLedger';
 import { IntegrityDoctorView } from './components/IntegrityDoctorView';
+import { DBeaverModal } from './components/DBeaverModal';
 import {
   Database, Table, History, Activity, RotateCcw, ShieldCheck, Heart
 } from 'lucide-react';
@@ -18,6 +19,8 @@ export function App() {
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [selectedTable, setSelectedTable] = useState<string>('organizations');
   const [integrityAudit, setIntegrityAudit] = useState<IntegrityAudit | null>(null);
+  const [dbInfo, setDbInfo] = useState<DbInfo | null>(null);
+  const [showDBeaverModal, setShowDBeaverModal] = useState(false);
 
   // Modal target
   const [modalTarget, setModalTarget] = useState<{ table: string; id: number; label: string } | null>(null);
@@ -28,14 +31,16 @@ export function App() {
 
   const loadInitialData = async () => {
     try {
-      const [g, t, a] = await Promise.all([
+      const [g, t, a, d] = await Promise.all([
         api.getSchemaGraph(),
         api.getTables(),
-        api.getIntegrityAudit()
+        api.getIntegrityAudit(),
+        api.getDbInfo().catch(() => null)
       ]);
       setSchemaGraph(g);
       setTables(t);
       setIntegrityAudit(a);
+      if (d) setDbInfo(d);
     } catch (err) {
       console.error('Initialization error:', err);
     }
@@ -136,6 +141,17 @@ export function App() {
           {/* System Status & Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button
+              onClick={() => setShowDBeaverModal(true)}
+              className="status-pill status-pill-sky"
+              style={{ cursor: 'pointer', padding: '4px 10px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+              title="Параметры подключения к PostgreSQL для DBeaver"
+            >
+              <Database size={12} />
+              <span>{dbInfo?.engine || 'PostgreSQL 16'}</span>
+              <span style={{ opacity: 0.6 }}>:5432</span>
+            </button>
+
+            <button
               onClick={() => {
                 setActiveTab('doctor');
                 scrollToWorkspace();
@@ -166,8 +182,10 @@ export function App() {
           setActiveTab('graph');
           scrollToWorkspace();
         }}
+        onOpenDbModal={() => setShowDBeaverModal(true)}
         healthScore={integrityAudit?.score || 100}
         totalTables={tables.length || 10}
+        dbInfo={dbInfo}
       />
 
       {/* Main Workspace */}
@@ -261,6 +279,15 @@ export function App() {
         />
       )}
 
+      {/* DBeaver Connection Modal */}
+      {showDBeaverModal && (
+        <DBeaverModal
+          dbInfo={dbInfo}
+          onClose={() => setShowDBeaverModal(false)}
+          onRefreshInfo={loadInitialData}
+        />
+      )}
+
       {/* Studio Clean Footer */}
       <footer
         style={{
@@ -290,7 +317,7 @@ export function App() {
           </div>
 
           <div className="mono-text" style={{ fontSize: 11, color: '#94a3b8' }}>
-            SQLite 3.x WAL • PRAGMA foreign_keys = ON • ACID compliant
+            {dbInfo?.isPostgres ? 'PostgreSQL 16 • Port 5432 • Native Foreign Keys • DBeaver Ready' : 'SQLite 3.x WAL • PRAGMA foreign_keys = ON • ACID compliant'}
           </div>
         </div>
       </footer>

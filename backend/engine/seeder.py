@@ -8,38 +8,50 @@ Populates a multi-tier enterprise holding dataset with:
 - Audit ledger history
 """
 import sqlite3
-from schema_defs import DDL_SCRIPT
+from schema_defs import DDL_SCRIPT, POSTGRES_DDL_SCRIPT
 
 class DatabaseSeeder:
     def __init__(self):
         pass
 
-    def init_schema(self, conn: sqlite3.Connection):
+    def init_schema(self, conn):
         """Initializes tables, indexes and pragmas."""
         cur = conn.cursor()
-        cur.executescript(DDL_SCRIPT)
+        is_pg = getattr(conn, "db_type", "SQLITE") == "POSTGRESQL"
+        if is_pg:
+            cur.executescript(POSTGRES_DDL_SCRIPT)
+        else:
+            cur.executescript(DDL_SCRIPT)
         conn.commit()
 
-    def reset_and_seed(self, conn: sqlite3.Connection, preset: str = "ENTERPRISE") -> dict:
+    def reset_and_seed(self, conn, preset: str = "ENTERPRISE") -> dict:
         cur = conn.cursor()
-        # Temporarily disable FKs during complete wipe to avoid delete order restrictions during reset
-        cur.execute("PRAGMA foreign_keys = OFF;")
-        cur.executescript("""
-            DELETE FROM cascade_audit_ledger;
-            DELETE FROM audit_attachments;
-            DELETE FROM payments;
-            DELETE FROM invoices;
-            DELETE FROM work_logs;
-            DELETE FROM tasks;
-            DELETE FROM project_assignments;
-            DELETE FROM projects;
-            DELETE FROM employees;
-            DELETE FROM departments;
-            DELETE FROM organizations;
-            DELETE FROM sqlite_sequence;
-        """)
-        conn.commit()
-        cur.execute("PRAGMA foreign_keys = ON;")
+        is_pg = getattr(conn, "db_type", "SQLITE") == "POSTGRESQL"
+        if is_pg:
+            cur.execute("""
+                TRUNCATE cascade_audit_ledger, audit_attachments, payments, invoices, work_logs, tasks,
+                         project_assignments, projects, employees, departments, organizations RESTART IDENTITY CASCADE;
+            """)
+            conn.commit()
+        else:
+            # Temporarily disable FKs during complete wipe to avoid delete order restrictions during reset
+            cur.execute("PRAGMA foreign_keys = OFF;")
+            cur.executescript("""
+                DELETE FROM cascade_audit_ledger;
+                DELETE FROM audit_attachments;
+                DELETE FROM payments;
+                DELETE FROM invoices;
+                DELETE FROM work_logs;
+                DELETE FROM tasks;
+                DELETE FROM project_assignments;
+                DELETE FROM projects;
+                DELETE FROM employees;
+                DELETE FROM departments;
+                DELETE FROM organizations;
+                DELETE FROM sqlite_sequence;
+            """)
+            conn.commit()
+            cur.execute("PRAGMA foreign_keys = ON;")
 
         # 1. Organizations
         cur.execute("""
@@ -138,6 +150,14 @@ class DatabaseSeeder:
             (3, 'invoices', 2, 'Audited_Fiscal_Invoice_Receipt_340k.pdf', 540, 'sha256-42a9b1c73f56e921d011'),
             (4, 'tasks', 4, 'Disruptor_Benchmark_Microbench_Results.csv', 120, 'sha256-11f8c2e98745a1b32d56')
         """)
+
+        if is_pg:
+            tables = ["organizations", "departments", "employees", "projects", "project_assignments", "tasks", "work_logs", "invoices", "payments", "audit_attachments", "cascade_audit_ledger"]
+            for tbl in tables:
+                try:
+                    cur.execute(f"SELECT setval(pg_get_serial_sequence('{tbl}', 'id'), coalesce(max(id), 1)) FROM {tbl};")
+                except Exception:
+                    pass
 
         conn.commit()
 

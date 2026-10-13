@@ -250,5 +250,24 @@ export const api = {
     const res = await fetch(`${API_BASE}/seed/reset?preset=${preset}`, { method: 'POST' });
     if (!res.ok) throw new Error('Failed to reset and seed database');
     return res.json();
+  },
+
+  async getDbInfo(): Promise<DbInfo> {
+    const res = await fetch(`${API_BASE}/system/db-info`);
+    if (!res.ok) throw new Error('Failed to load database engine info');
+    return res.json();
   }
 };
+
+export interface DbInfo {
+  engine: string;
+  isPostgres: boolean;
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password?: string;
+  dbeaverJdbcUrl: string;
+  status: string;
+  foreignKeyEnforcement: string;
+}

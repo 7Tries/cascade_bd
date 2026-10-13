@@ -76,8 +76,22 @@ class RestoreEngine:
 
                     placeholders = ",".join("?" for _ in cols)
                     col_names = ",".join(cols)
-                    insert_sql = f"INSERT OR REPLACE INTO {table_name} ({col_names}) VALUES ({placeholders})"
+                    is_pg = getattr(conn, "db_type", "SQLITE") == "POSTGRESQL"
+                    if is_pg:
+                        updates = ", ".join(f"{c} = EXCLUDED.{c}" for c in cols if c != meta.pk)
+                        if updates:
+                            insert_sql = f"INSERT INTO {table_name} ({col_names}) VALUES ({placeholders}) ON CONFLICT ({meta.pk}) DO UPDATE SET {updates}"
+                        else:
+                            insert_sql = f"INSERT INTO {table_name} ({col_names}) VALUES ({placeholders}) ON CONFLICT ({meta.pk}) DO NOTHING"
+                    else:
+                        insert_sql = f"INSERT OR REPLACE INTO {table_name} ({col_names}) VALUES ({placeholders})"
                     cur.execute(insert_sql, vals)
+
+                if is_pg and meta:
+                    try:
+                        cur.execute(f"SELECT setval(pg_get_serial_sequence('{table_name}', '{meta.pk}'), coalesce(max({meta.pk}), 1)) FROM {table_name};")
+                    except Exception:
+                        pass
 
                 restored_counts[table_name] = len(records)
                 trace_steps.append({

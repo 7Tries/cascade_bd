@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 import sqlite3
 
-from database import get_connection
+from database import get_connection, get_db_info
 from schema_defs import SCHEMA_TABLES
 from engine.graph_planner import GraphPlanner
 from engine.impact_analyzer import ImpactAnalyzer
@@ -47,6 +47,12 @@ def get_db():
         yield conn
     finally:
         conn.close()
+
+# 0. System & Engine Info
+@router.get("/system/db-info")
+def get_database_info():
+    """Returns live PostgreSQL / SQLite status and DBeaver connection parameters."""
+    return get_db_info()
 
 # 1. Schema Endpoints
 @router.get("/schema/graph")

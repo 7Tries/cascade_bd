@@ -301,3 +301,149 @@ CREATE INDEX IF NOT EXISTS idx_invoices_proj ON invoices(project_id);
 CREATE INDEX IF NOT EXISTS idx_payments_inv ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_audit_attach ON audit_attachments(parent_table, parent_id);
 """
+
+# Native PostgreSQL DDL Script
+POSTGRES_DDL_SCRIPT = """
+CREATE TABLE IF NOT EXISTS organizations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(100) UNIQUE NOT NULL,
+    tier VARCHAR(50) DEFAULT 'ENTERPRISE',
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS departments (
+    id SERIAL PRIMARY KEY,
+    org_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    budget NUMERIC(15,2) DEFAULT 0.0,
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS employees (
+    id SERIAL PRIMARY KEY,
+    dept_id INTEGER NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+    manager_id INTEGER NULL REFERENCES employees(id) ON DELETE SET NULL,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    role VARCHAR(100) NOT NULL,
+    salary NUMERIC(15,2) DEFAULT 0.0,
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS projects (
+    id SERIAL PRIMARY KEY,
+    dept_id INTEGER NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+    lead_id INTEGER NULL REFERENCES employees(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'IN_PROGRESS',
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS project_assignments (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+    assigned_role VARCHAR(100) DEFAULT 'DEVELOPER',
+    allocation_pct INTEGER DEFAULT 100,
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(project_id, employee_id)
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    parent_task_id INTEGER NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    assignee_id INTEGER NULL REFERENCES employees(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
+    priority VARCHAR(50) DEFAULT 'MEDIUM',
+    status VARCHAR(50) DEFAULT 'TODO',
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS work_logs (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+    hours_spent NUMERIC(8,2) NOT NULL,
+    notes TEXT,
+    logged_date DATE DEFAULT CURRENT_DATE,
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS invoices (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    invoice_number VARCHAR(100) UNIQUE NOT NULL,
+    amount NUMERIC(15,2) NOT NULL,
+    status VARCHAR(50) DEFAULT 'DRAFT',
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+    id SERIAL PRIMARY KEY,
+    invoice_id INTEGER NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+    transaction_ref VARCHAR(100) UNIQUE NOT NULL,
+    amount NUMERIC(15,2) NOT NULL,
+    payment_method VARCHAR(100) DEFAULT 'BANK_TRANSFER',
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS audit_attachments (
+    id SERIAL PRIMARY KEY,
+    parent_table VARCHAR(100) NOT NULL,
+    parent_id INTEGER NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    file_size_kb INTEGER NOT NULL,
+    checksum VARCHAR(128) NOT NULL,
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS cascade_audit_ledger (
+    id SERIAL PRIMARY KEY,
+    execution_id VARCHAR(64) UNIQUE NOT NULL,
+    policy VARCHAR(64) NOT NULL,
+    root_table VARCHAR(100) NOT NULL,
+    root_id INTEGER NOT NULL,
+    affected_summary TEXT NOT NULL,
+    snapshot_data TEXT NOT NULL,
+    executed_by VARCHAR(100) DEFAULT 'admin',
+    reason TEXT,
+    restored INTEGER DEFAULT 0,
+    restored_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_dept_org ON departments(org_id);
+CREATE INDEX IF NOT EXISTS idx_pg_emp_dept ON employees(dept_id);
+CREATE INDEX IF NOT EXISTS idx_pg_emp_mgr ON employees(manager_id);
+CREATE INDEX IF NOT EXISTS idx_pg_proj_dept ON projects(dept_id);
+CREATE INDEX IF NOT EXISTS idx_pg_proj_lead ON projects(lead_id);
+CREATE INDEX IF NOT EXISTS idx_pg_tasks_proj ON tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_pg_tasks_parent ON tasks(parent_task_id);
+CREATE INDEX IF NOT EXISTS idx_pg_worklogs_task ON work_logs(task_id);
+CREATE INDEX IF NOT EXISTS idx_pg_invoices_proj ON invoices(project_id);
+CREATE INDEX IF NOT EXISTS idx_pg_payments_inv ON payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_pg_audit_attach ON audit_attachments(parent_table, parent_id);
+"""
+

@@ -33,18 +33,41 @@ class IntegrityDoctor:
                 })
 
         # 2. Foreign Key Referential Integrity Check
-        cur.execute("PRAGMA foreign_key_check;")
-        fk_rows = cur.fetchall()
-        for r in fk_rows:
-            issues.append({
-                "type": "ORPHANED_FOREIGN_KEY",
-                "severity": "HIGH",
-                "table": r[0],
-                "rowId": r[1],
-                "parentTable": r[2],
-                "fkIndex": r[3],
-                "detail": f"Table '{r[0]}' row {r[1]} points to non-existent parent in '{r[2]}'"
-            })
+        is_pg = getattr(conn, "db_type", "SQLITE") == "POSTGRESQL"
+        if is_pg:
+            physical_status = "OK (PostgreSQL 16 Engine)"
+            for table_name, meta in self.tables.items():
+                for fk in meta.fks:
+                    sql = f"""
+                        SELECT c.{meta.pk}, c.{fk.from_col}
+                        FROM {table_name} c
+                        LEFT JOIN {fk.to_table} p ON c.{fk.from_col} = p.{fk.to_col}
+                        WHERE c.{fk.from_col} IS NOT NULL AND p.{fk.to_col} IS NULL
+                    """
+                    cur.execute(sql)
+                    for r in cur.fetchall():
+                        issues.append({
+                            "type": "ORPHANED_FOREIGN_KEY",
+                            "severity": "HIGH",
+                            "table": table_name,
+                            "rowId": r[0],
+                            "parentTable": fk.to_table,
+                            "fkIndex": fk.from_col,
+                            "detail": f"Table '{table_name}' row {r[0]} points to non-existent parent in '{fk.to_table}' ({fk.from_col}={r[1]})"
+                        })
+        else:
+            cur.execute("PRAGMA foreign_key_check;")
+            fk_rows = cur.fetchall()
+            for r in fk_rows:
+                issues.append({
+                    "type": "ORPHANED_FOREIGN_KEY",
+                    "severity": "HIGH",
+                    "table": r[0],
+                    "rowId": r[1],
+                    "parentTable": r[2],
+                    "fkIndex": r[3],
+                    "detail": f"Table '{r[0]}' row {r[1]} points to non-existent parent in '{r[2]}'"
+                })
 
         # 3. Polymorphic Orphan Check (audit_attachments)
         cur.execute("SELECT id, parent_table, parent_id, filename FROM audit_attachments")
@@ -119,20 +142,33 @@ class IntegrityDoctor:
             "issues": issues
         }
 
-    def inject_chaos_orphan(self, conn: sqlite3.Connection) -> Dict[str, Any]:
+    def inject_chaos_orphan(self, conn) -> Dict[str, Any]:
         """
         Temporarily turns off FK enforcement to insert an intentional orphan
         for demonstration of integrity doctor detection and cascade protection.
         """
         cur = conn.cursor()
-        cur.execute("PRAGMA foreign_keys = OFF;")
-        cur.execute("""
-            INSERT INTO departments (org_id, name, budget, is_deleted)
-            VALUES (999999, 'CHAOS_SIMULATED_ORPHAN_DEPT', 150000.0, 0)
-        """)
-        orphan_id = cur.lastrowid
-        conn.commit()
-        cur.execute("PRAGMA foreign_keys = ON;")
+        is_pg = getattr(conn, "db_type", "SQLITE") == "POSTGRESQL"
+        if is_pg:
+            cur.execute("ALTER TABLE departments DISABLE TRIGGER ALL;")
+            cur.execute("""
+                INSERT INTO departments (org_id, name, budget, is_deleted)
+                VALUES (999999, 'CHAOS_SIMULATED_ORPHAN_DEPT', 150000.0, 0)
+                RETURNING id;
+            """)
+            orphan_id = cur.fetchone()[0]
+            cur.execute("ALTER TABLE departments ENABLE TRIGGER ALL;")
+            conn.commit()
+        else:
+            cur.execute("PRAGMA foreign_keys = OFF;")
+            cur.execute("""
+                INSERT INTO departments (org_id, name, budget, is_deleted)
+                VALUES (999999, 'CHAOS_SIMULATED_ORPHAN_DEPT', 150000.0, 0)
+            """)
+            orphan_id = cur.lastrowid
+            conn.commit()
+            cur.execute("PRAGMA foreign_keys = ON;")
+
         return {
             "action": "INJECTED_ORPHAN",
             "table": "departments",
@@ -141,16 +177,19 @@ class IntegrityDoctor:
             "message": f"Injected orphan department (ID {orphan_id}) referencing non-existent organization 999999"
         }
 
-    def repair_database(self, conn: sqlite3.Connection) -> Dict[str, Any]:
+    def repair_database(self, conn) -> Dict[str, Any]:
         """
         Repairs logical inconsistencies and purges orphan records safely.
         """
         cur = conn.cursor()
-        cur.execute("PRAGMA foreign_keys = OFF;")
+        is_pg = getattr(conn, "db_type", "SQLITE") == "POSTGRESQL"
+        if not is_pg:
+            cur.execute("PRAGMA foreign_keys = OFF;")
         repaired_actions = []
 
         try:
-            cur.execute("BEGIN IMMEDIATE TRANSACTION;")
+            if not is_pg:
+                cur.execute("BEGIN IMMEDIATE TRANSACTION;")
 
             # 1. Purge departments with non-existent org_id
             cur.execute("""
@@ -170,8 +209,9 @@ class IntegrityDoctor:
                     repaired_actions.append(f"Purged {cur.rowcount} orphan attachments for {parent_tbl}")
 
             # 3. Synchronize soft-deleted cascades: mark employees whose department is soft-deleted
-            cur.execute("""
-                UPDATE employees SET is_deleted = 1, deleted_at = datetime('now')
+            del_at_expr = "NOW()" if is_pg else "datetime('now')"
+            cur.execute(f"""
+                UPDATE employees SET is_deleted = 1, deleted_at = {del_at_expr}
                 WHERE is_deleted = 0 AND dept_id IN (SELECT id FROM departments WHERE is_deleted = 1)
             """)
             if cur.rowcount > 0:
@@ -179,7 +219,8 @@ class IntegrityDoctor:
 
             conn.commit()
         finally:
-            cur.execute("PRAGMA foreign_keys = ON;")
+            if not is_pg:
+                cur.execute("PRAGMA foreign_keys = ON;")
 
         return {
             "repairedCount": len(repaired_actions),
