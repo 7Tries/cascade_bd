@@ -194,10 +194,24 @@ def main():
     elif args.command == "seed":
         cmd_seed(args.preset)
     elif args.command == "serve":
-        url = f"http://localhost:{args.port}"
-        print(f"Opening CascadeGuard UI in browser: {url}")
+        import socket
+        port = args.port
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(('127.0.0.1', port)) == 0:
+                print(f"\n[CascadeGuard] Предупреждение: порт {port} уже занят сторонним процессом.")
+                print(f"Освобождение порта {port} от зависших фоновых процессов...")
+                try:
+                    import subprocess
+                    subprocess.run(
+                        ["powershell", "-Command", f"Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue | ForEach-Object {{ Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }}"],
+                        timeout=5
+                    )
+                except Exception:
+                    pass
+        url = f"http://localhost:{port}"
+        print(f"\nЗапуск сервера CascadeGuard: {url}")
         webbrowser.open(url)
-        uvicorn.run("main:app", host="0.0.0.0", port=args.port, reload=True)
+        uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
     else:
         parser.print_help()
 

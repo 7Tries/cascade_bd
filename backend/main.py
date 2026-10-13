@@ -55,9 +55,14 @@ if os.path.exists(FRONTEND_DIST):
     @app.get("/{full_path:path}")
     def serve_spa(full_path: str):
         file_path = os.path.join(FRONTEND_DIST, full_path)
+        no_cache_headers = {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
         if os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(FRONTEND_DIST, "index.html"))
+            return FileResponse(file_path, headers=no_cache_headers if file_path.endswith('.html') else None)
+        return FileResponse(os.path.join(FRONTEND_DIST, "index.html"), headers=no_cache_headers)
 
 if __name__ == "__main__":
     port = 8000
